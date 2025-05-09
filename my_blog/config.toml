@@ -1,16 +1,35 @@
-# The URL the site will be built for
 base_url = "https://example.com"
+theme = "papermod"
 
-# Whether to automatically compile all Sass files in the sass directory
+taxonomies = [
+  {name = "tags", feed = true}
+]
+
 compile_sass = true
 
-# Whether to build a search index to be used later on by a JavaScript library
 build_search_index = false
 
 [markdown]
-# Whether to do syntax highlighting
-# Theme can be customised by setting the `highlight_theme` variable to a theme supported by Zola
-highlight_code = false
+highlight_code = true
 
 [extra]
-# Put all your custom variables here
+  [extra.papermod]
+    title = "CWLog"
+    home_title = "개발 & 해킹 좋아하는 사람"
+    home_content = "배운 것을 나누고, 기록하며 복기하는 블로그"
+    social_icons = [
+      { title = "GitHub", url = "https://github.com/wHoIsDReAmer", icon = "github" },
+      { title = "Twitter", url = "https://x.com/@neverprogrammer", icon = "twitter" }
+    ]
+    date_format = "%Y-%m-%d"
+    default_toc_open = true
+    language_direction = "auto"
+    keywords = ["programming", "hacking", "security", "coding", "developer", "develop"]
+    default_theme = "dark"
+    theme = "dark"
+    show_share_icons = true
+    show_post_meta = true
+    show_breadcrumbs = true
+    show_code_copy_buttons = true
+    show_post_nav_links = true
+    show_taxonomies = true
