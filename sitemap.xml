@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+        <loc>https://wHoIsDReAmer.github.io/blog/</loc>
+    </url>
+    <url>
+        <loc>https://wHoIsDReAmer.github.io/blog/archive/</loc>
+    </url>
+    <url>
+        <loc>https://wHoIsDReAmer.github.io/blog/page/1/</loc>
+    </url>
+    <url>
+        <loc>https://wHoIsDReAmer.github.io/blog/posts/</loc>
+    </url>
+    <url>
+        <loc>https://wHoIsDReAmer.github.io/blog/posts/2025-05-09-what-is-the-coroutine/</loc>
+        <lastmod>2025-05-09</lastmod>
+    </url>
+    <url>
+        <loc>https://wHoIsDReAmer.github.io/blog/posts/page/1/</loc>
+    </url>
+    <url>
+        <loc>https://wHoIsDReAmer.github.io/blog/search/</loc>
+        <lastmod>2025-05-09</lastmod>
+    </url>
+    <url>
+        <loc>https://wHoIsDReAmer.github.io/blog/tags/</loc>
+    </url>
+    <url>
+        <loc>https://wHoIsDReAmer.github.io/blog/tags/coroutine/</loc>
+    </url>
+    <url>
+        <loc>https://wHoIsDReAmer.github.io/blog/tags/cs/</loc>
+    </url>
+</urlset>
