@@ -1,0 +1,24 @@
+name: Build and Deploy Zola site to GitHub Pages
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build_and_deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # gh-pages 브랜치
+      
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build and Deploy with zola-deploy-action
+        uses: shalzz/zola-deploy-action@v0.20.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
