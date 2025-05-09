@@ -1,6 +1,8 @@
 +++
 title = "코루틴이란?"
 date = "2025-05-09"
+
+[taxonomies]
 tags = ["coroutine", "cs"]
 +++
 
