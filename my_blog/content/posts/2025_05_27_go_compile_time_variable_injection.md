@@ -9,10 +9,11 @@ tags = ["go"]
 ## 배경
 
 이번에 회사 프로젝트 작업을 하면서 .env 없이 컴파일 타임 때 변수를 주입하는 방법이 있나 찾아보았다.
-이렇게 하면 `.env`나 여런 콘피그 파일 없이 단일 파일만 있으면 되기 때문에 굉장히 편리할 거라 생각했다.
+이렇게 하면 `.env`나 여러 콘피그 파일 없이 단일 파일만 있으면 되기 때문에 굉장히 편리할 거라 생각했다.
 
 일단 처음에 찾아봤던 건 `.env`를 바탕으로 상수 파일을 생성해주는 `go:generate` CLI 같은 걸 찾아봤는데, 없었다.
-하긴 그냥 constants를 수정하면 되지 번거롭게 gen까지 할 필요는 없었고, 러스트에서 `include_bytes!` 매크로 같이 컴파일 타임 때 값을 주입할 수 있는 방법을 찾았다.
+
+근데 그럴거면 그냥 constants를 수정하면 되지 번거롭게 gen까지 할 필요는 없었고, 러스트에서 `include_bytes!` 매크로 같이 컴파일 타임 때 값을 주입할 수 있는 방법을 찾았다.
 
 ## 컴파일 타임 변수 주입
 
@@ -70,4 +71,5 @@ go build -ldflags="-X 'main.Version=v1.0.0' -X 'main.BuildTime=2025-05-27' -X 'm
 - **string 타입만 지원**: 다른 타입은 지원하지 않는다
 
 ## 참조
-- https://stackoverflow.com/questions/47509272/how-to-set-package-variable-using-ldflags-x-in-golang-build
+
+- [https://stackoverflow.com/questions/47509272/how-to-set-package-variable-using-ldflags-x-in-golang-build](https://stackoverflow.com/questions/47509272/how-to-set-package-variable-using-ldflags-x-in-golang-build)
