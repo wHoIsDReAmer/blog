@@ -1,5 +1,5 @@
 +++
-title = "레거시 스택 개발 환경을을 Dev Container로 획일화 하기"
+title = "devcontainer 도입기"
 date = "2025-07-11"
 
 [taxonomies]
