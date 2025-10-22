@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+<head>
+    
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>코루틴이란?</title>
+
+
+<meta name="keywords" content="programming, hacking, security, coding, developer, develop">
+
+
+
+<meta name="description" content="코루틴의 개념과 상태 머신 기반 구현, 스택리스&#x2F;스택풀 차이, OS 이벤트 메커니즘을 요약합니다.">
+
+
+
+
+
+<link rel="canonical" href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;posts&#x2F;2025-05-09-what-is-the-coroutine&#x2F;">
+
+
+<link rel="stylesheet" href="https://wHoIsDReAmer.github.io/blog/css/includes/scroll-bar.css">
+<link rel="stylesheet" href="https://wHoIsDReAmer.github.io/blog/css/styles.css">
+<link rel="stylesheet" href="https://wHoIsDReAmer.github.io/blog/css/override.css">
+
+
+
+
+
+
+
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+    </style>
+    
+</noscript>
+
+
+
+    
+</head>
+<body class=" dark" id="top">
+    
+    
+<script>
+    if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    }
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;" accesskey="h" title="CWLog (Alt + H)">
+                CWLog
+            </a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+                <ul class="lang-switch">
+                    <li></li>
+                </ul>
+            </div>
+        </div>
+        
+    </nav>
+</header>
+
+    
+    <main class="main">
+        
+<article class="post-single">
+  <header class="post-header">
+      <div class="breadcrumbs">
+          <a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;">Home</a>&nbsp;»&nbsp;
+          <a href="https://wHoIsDReAmer.github.io/blog/posts/">Posts</a>&nbsp;»&nbsp;
+          <a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;posts&#x2F;2025-05-09-what-is-the-coroutine&#x2F;">코루틴이란?</a>
+      </div>
+      <h1 class="post-title">코루틴이란?</h1>
+      
+      
+      <div class="post-description">
+          코루틴의 개념과 상태 머신 기반 구현, 스택리스&#x2F;스택풀 차이, OS 이벤트 메커니즘을 요약합니다.
+      </div>
+      
+      
+      <div class="post-meta">
+      
+
+
+
+
+
+
+
+
+
+
+<span title="2025-05-09 00:00:00 +0000">2025-05-09</span>&nbsp;·&nbsp;
+
+      
+      </div>
+      
+  </header>
+
+  
+  
+
+<div class="toc">
+    <details  open>
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner">
+            <ul>
+                
+                <li>
+                    <a href="#korutin" aria-label="코루틴">코루틴</a>
+                    
+                    <ul>
+                    
+                        <li>
+                            <a href="#seutaegriseu-korutin" aria-label="스택리스 코루틴">스택리스 코루틴</a>
+                            
+                        </li>
+                    
+                        <li>
+                            <a href="#seutaegpul-korutin" aria-label="스택풀 코루틴">스택풀 코루틴</a>
+                            
+                        </li>
+                    
+                        <li>
+                            <a href="#siseutem-kol" aria-label="시스템 콜">시스템 콜</a>
+                            
+                        </li>
+                    
+                    </ul>
+                    
+                </li>
+                
+            </ul>
+        </div>
+    </details>
+</div>
+
+
+  
+
+  
+  <div class="post-content">
+      <h2 id="korutin">코루틴<a class="anchor" aria-hidden="true" href="#korutin" hidden="">#</a>
+</h2>
+<p>흔히 코틀린을 사용할 때 자주 만날 수 있는 단어인 코루틴, 깊게 알아보자.</p>
+<p>코루틴이란 Co (ooperation 협동) + routine (루틴) 단어가 합쳐져 생긴 개념이다.</p>
+<p>스레드처럼 백그라운드 작업을 위임할 때 많이 사용되는데, 이는 코틀린 뿐만 아니라 여러 언어에서도 통용된다. (Rust 비동기 모델, Go 등등..) 결국 코루틴은 하나의 비동기 프로그래밍을 위한 추상화 도구이기 때문이다.</p>
+<p>코루틴이 어떻게 구현되는지 살펴보자. 일반적으로 코루틴은 내부적으로 상태 머신(state machine)을 사용한다.</p>
+<p>상태 머신이란 여러 상태(state)를 가지고 있으며, 특정 조건에 따라 상태 간 전환이 이루어지는 시스템을 뜻한다. 코루틴은 실행 중에 여러 상태를 거치며, 각 상태에서 일시 중단되고 다시 시작될 수 있다.</p>
+<p>그럼 이 상태 머신은 구체적으로 어떻게 구현될까? 코루틴을 지원하는 언어의 컴파일러는 우리가 작성한 코드를 분석하고 변환하여 내부적으로 상태 머신을 만들어낸다. 예를 들어, 코틀린에서 <code>suspend</code> 키워드가 붙은 함수나 C#의 <code>async/await</code> 구문을 사용하면, 컴파일러는 이 함수들을 여러 조각으로 나누고 각 중단 가능 지점(suspension point)을 기준으로 상태를 관리하는 코드를 생성한다.</p>
+<p>코루틴이 일시 중단될 때, 컴파일러는 해당 시점의 **실행 컨텍스트(execution context)**를 저장하기 위한 메커니즘을 작동시킨다. 이 컨텍스트에는 다음 실행을 위해 필요한 모든 정보, 즉 <strong>지역 변수의 현재 값들, 명령어 포인터(다음에 실행할 코드의 주소), 그리고 현재 호출 스택의 일부 정보(필요한 경우)</strong> 등이 포함된다. 이런 정보들이 힙(heap) 메모리에 할당되는 <strong>'컨티뉴에이션 객체(Continuation Object)'</strong> 또는 이와 유사한 자료 구조에 패키징되어 저장된다.</p>
+<p>나중에 스케줄러(scheduler)에 의해 해당 코루틴이 다시 실행될 준비가 되면 이 저장된 컨티뉴에이션 객체가 활성화된다. 시스템은 이 객체로부터 지역 변수들을 복원하고, 명령어 포인터를 중단됐던 지점으로 정확히 되돌려 놓음으로써 코루틴이 실행을 재개할 수 있게 된다.</p>
+<p>상태 머신을 다루는 방법 중에 대표적으로 두가지 방법으로 나뉜다. 스택리스 코루틴과 스택풀 코루틴이다.</p>
+<h3 id="seutaegriseu-korutin">스택리스 코루틴<a class="anchor" aria-hidden="true" href="#seutaegriseu-korutin" hidden="">#</a>
+</h3>
+<p>스택리스 코루틴은 상태를 저장함과 동시에 힙으로 변수 값과 실행 위치(몇 번째에서 중단되는지)이 저장된다. 스택을 사용하지 않기 때문에 상대적으로 컨텍스트 스위치 비용도 적고, 메모리 용량도 작아지고 효율적이다.</p>
+<h3 id="seutaegpul-korutin">스택풀 코루틴<a class="anchor" aria-hidden="true" href="#seutaegpul-korutin" hidden="">#</a>
+</h3>
+<p>스택풀 코루틴은 상태를 저장할 때 스택째로 저장하는 방법이다. 용량도 더 들고, 재귀 함수에서 잘못 사용 시 스택오버플로우가 발생한다. 다만, 일반 함수랑 동일한 원리로 동작하기 때문에 디버깅이 편리하다는 장점이 있다.</p>
+<h3 id="siseutem-kol">시스템 콜<a class="anchor" aria-hidden="true" href="#siseutem-kol" hidden="">#</a>
+</h3>
+<p>상태 머신은 일반적으로 시스템 콜(syscall)로 제어한다. 거의 코루틴의 핵심이라고 봐도 무방하다.</p>
+<p>애플리케이션에서 스레드를 사용하진 않지만, I/O 작업이 발생하면 OS에 해당 작업 스레드를 위임한다. 그리고, 시스템 콜에 해당 작업이 완료되면 이벤트를 보내달라고 요청한다. 그리고 이벤트가 내려지기까지 기다린다. (상태 머신이 상태가 바뀔 때까지 기다림) 이벤트가 내려지면 해당 작업을 다시 재개하는 방식이다.</p>
+<p>다음은 운영체제별 메커니즘이다.</p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>리눅스: epoll
+</span><span>윈도우: IOCP
+</span><span>BSD: kqueue
+</span></code></pre>
+<p>위와 같이 운영체제마다 조금씩 차이가 있지만 동일한 메커니즘으로 이벤트를 내려준다.</p>
+
+  </div>
+  
+
+  <footer class="post-footer">
+      
+      <ul class="post-tags">
+          
+          
+          <li><a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;tags&#x2F;coroutine&#x2F;">coroutine</a></li>
+          
+          
+          <li><a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;tags&#x2F;cs&#x2F;">cs</a></li>
+          
+      </ul>
+      
+
+    
+    
+
+
+<nav class="paginav">
+    
+    
+    <a class="next" href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;posts&#x2F;2025-05-17-pipeline-pattern&#x2F;">
+        <span class="title">Next »</span>
+        <br>
+        <span>파이프라인 패턴</span>
+    </a>
+    
+</nav>
+
+
+    
+  </footer>
+
+</article>
+
+    </main>
+    
+    <footer class="footer">
+    
+    <span>&copy; 2025 <a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;"></a></span>
+    
+    <span>
+        Powered by
+        <a href="https://www.getzola.org/" rel="noopener noreferrer" target="_blank">Zola</a> &
+        <a href="https://github.com/cydave/zola-theme-papermod" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+
+
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+
+
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+
+
+
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+
+
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerText = 'copy';
+        function copyingDone() {
+            copybutton.innerText = 'copied!';
+            setTimeout(() => {
+                copybutton.innerText = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                var content = codeblock.textContent;
+                if(codeblock.firstChild.tagName == 'TABLE') {
+                    content = Array(...codeblock.firstChild.getElementsByTagName('span')).map((span) => { return span.textContent; }).join('');
+                }
+                navigator.clipboard.writeText(content);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            // td containing LineNos
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            // table containing LineNos and code
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            // code blocks not having highlight as parent class
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+
+
+
+    
+</body>
+</html>
