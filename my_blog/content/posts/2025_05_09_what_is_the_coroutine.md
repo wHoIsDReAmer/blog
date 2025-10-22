@@ -1,6 +1,7 @@
 +++
 title = "코루틴이란?"
 date = "2025-05-09"
+description = "코루틴의 개념과 상태 머신 기반 구현, 스택리스/스택풀 차이, OS 이벤트 메커니즘을 요약합니다."
 
 [taxonomies]
 tags = ["coroutine", "cs"]

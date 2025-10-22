@@ -1,6 +1,7 @@
 +++
 title = "파이프라인 패턴"
 date = "2025-05-16"
+description = "Go로 파이프라인 패턴을 구현해 단계별 처리 흐름을 느슨 결합으로 구성하는 방법을 소개합니다."
 
 [taxonomies]
 tags = ["go", "pipeline"]

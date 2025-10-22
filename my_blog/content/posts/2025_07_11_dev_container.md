@@ -1,6 +1,7 @@
 +++
 title = "devcontainer 도입기"
 date = "2025-07-11"
+description = "레거시 자바 프로젝트에 devcontainer를 도입해 재현 가능한 개발 환경을 구성한 사례와 설정을 공유합니다."
 
 [taxonomies]
 tags = ["devcontainer", "docker"]

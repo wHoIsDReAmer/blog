@@ -1,6 +1,7 @@
 +++
 title = "Go의 Compile-Time Variable Injection"
 date = "2025-05-27"
+description = "ldflags -X로 컴파일 타임에 문자열 변수를 주입하는 방법과 패키지 경로 지정 팁을 정리합니다."
 
 [taxonomies]
 tags = ["go"]

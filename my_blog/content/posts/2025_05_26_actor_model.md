@@ -1,6 +1,7 @@
 +++
 title = "액터 모델"
 date = "2025-05-26"
+description = "액터 모델의 핵심 원리와 장단점, 메시지 기반 동시성을 Rust 예제로 살펴봅니다."
 
 [taxonomies]
 tags = ["actor", "asynchronous", "concurrency"]
