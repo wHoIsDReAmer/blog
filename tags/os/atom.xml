@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>CWLog - os</title>
+    <subtitle>개발 &amp; 해킹 좋아하는 사람의 블로그</subtitle>
+    <link rel="self" type="application/atom+xml" href="https://wHoIsDReAmer.github.io/blog/tags/os/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://wHoIsDReAmer.github.io/blog/"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2025-06-08T00:00:00+00:00</updated>
+    <id>https://wHoIsDReAmer.github.io/blog/tags/os/atom.xml</id>
+    <entry xml:lang="en">
+        <title>PE 포맷 파일 구조</title>
+        <published>2025-06-08T00:00:00+00:00</published>
+        <updated>2025-06-08T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://wHoIsDReAmer.github.io/blog/posts/2025-06-08-pe-format/"/>
+        <id>https://wHoIsDReAmer.github.io/blog/posts/2025-06-08-pe-format/</id>
+        
+        <content type="html" xml:base="https://wHoIsDReAmer.github.io/blog/posts/2025-06-08-pe-format/">&lt;h2 id=&quot;pe-pomaesiran&quot;&gt;PE 포맷이란&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#pe-pomaesiran&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;p&gt;PE 포맷은 &lt;strong&gt;Portable Excutable&lt;&#x2F;strong&gt;의 약자로 윈도우 운영체제에서 실행 가능한 파일을 위한 포맷 형식이다. 시그니처는 &lt;code&gt;MZ&lt;&#x2F;code&gt;. (MS-DOS의 개발자인 마크 즈비코프스키의 이름을 땄다.)&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;pail-jongryu&quot;&gt;파일 종류&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#pail-jongryu&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;실행: &lt;code&gt;.exe, .scr&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;드라이버: &lt;code&gt;.sys, .vxd&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;라이브러리: &lt;code&gt;.dll, .ocx, .cpl, .drv&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;오브젝트: &lt;code&gt;.obj&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;&lt;code&gt;.scr&lt;&#x2F;code&gt; 확장자는 생소해서 찾아봤더니 스크린 보호기 파일이라고 한다. 실행 가능하게 만들어지고, 생소해서 악성 코드로 많이 사용된다고 한다.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;pe-pomaes-pail-gujo&quot;&gt;PE 포맷 파일 구조&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#pe-pomaes-pail-gujo&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;윈도우는 NT 3.1 이후로 PE 포맷으로 확장적으로 옮겼다고 한다. 그래서 PE 파일은 명시적으로 DOS 환경을 지원한다. 다만, 실제로 빌드된 파일을 DOS 환경에서 실행하면 &lt;code&gt;This program cannot be run in DOS mode&lt;&#x2F;code&gt; 라는 메시지를 보여준다. 단순히 호환성만 유지..&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;..&#x2F;..&#x2F;images&#x2F;Portable_Executable_32_bit_Structure_in_SVG.svg&quot; alt=&quot;PE 포맷 파일 구조&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;위 사진을 바탕으로, 크게 구조를 헤더와 바디로 나눌 수 있다. 헤더에는 DOS Header와 DOS Stub이 있고, 바디에는 이 헤더에 정의된 섹션들이 있다.&lt;&#x2F;p&gt;
+&lt;p&gt;이렇게 구조화된 이유는, 프로세스 동적 링커에게 파일을 어떻게 메모리로 매핑할 지 설명할 수 있게 하기 위해서다.&lt;&#x2F;p&gt;
+&lt;p&gt;각 세션별로 OS에게 요구하는 권한이 다르다. 예를 들어, 코드 섹션(대표적으로 &lt;code&gt;.text&lt;&#x2F;code&gt;)은 읽기 권한이 필요하고, 데이터 섹션(대표적으로 &lt;code&gt;.data&lt;&#x2F;code&gt;)은 읽기&#x2F;쓰기 권한이 필요하다.&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;sesyeon-jeongryeol&quot;&gt;세션 정렬&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#sesyeon-jeongryeol&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h4&gt;
+&lt;p&gt;디스크와 메모리에서 요구하는 정렬 방식이 다른데, 이는 목적성이 다르기 때문이다.&lt;&#x2F;p&gt;
+&lt;p&gt;메모리에서 섹션은 페이지 단위(일반적으로 4kb)로 정렬되어야 한다. 이러한 이유는 메모리 효율성에서 찾아볼 수 있다. 페이지 섹션의 크기가 작으면 &lt;strong&gt;페이지 테이블&lt;&#x2F;strong&gt;이 커지고, (여러 페이지의 권한 정보를 모두 리스트업 해야하니) 페이지 섹션의 크기가 크면 &lt;strong&gt;낭비되는 공간&lt;&#x2F;strong&gt;이 커진다.&lt;&#x2F;p&gt;
+&lt;p&gt;즉, 디스크에서 사용하는 &lt;code&gt;FlieAlignment&lt;&#x2F;code&gt;와 &lt;code&gt;SectionAlignment&lt;&#x2F;code&gt;가 다른 이유가 이것이다. 디스크에 있는 그대로 정렬하면 메모리 효율성이 떨어지기 때문에.&lt;&#x2F;p&gt;
+&lt;p&gt;반대로도 똑같다. 메모리에 4kb로 저장하던 걸 디스크에 그대로 빼다박으면 낭비되는 공간이 커진다.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;dos-header&quot;&gt;DOS Header&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#dos-header&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;앞서 설명한 내용이 도스 헤더에 반영되어 있기에 길게 설명할 건 없고, 구조체로 직접 살펴보자.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span&gt;#[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;repr&lt;&#x2F;span&gt;&lt;span&gt;(C)]
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;DOSHeader {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;e_magic&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 매직 넘버: 항상 &amp;#39;MZ&amp;#39;(0x5A4D) 값을 가집니다. DOS 실행 파일임을 나타냅니다.
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;e_cblp&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,       &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 파일의 마지막 페이지에 있는 바이트 수
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;e_cp&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,         &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 파일에 있는 페이지 수
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;e_crlc&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,       &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 재배치(Relocation) 수
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;e_cparhdr&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 단락(paragraph) 단위의 헤더 크기 (1 단락 = 16 바이트)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;e_minalloc&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 프로그램을 실행하기 위해 필요한 최소 추가 단락 수
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;e_maxalloc&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 프로그램을 실행하기 위해 필요한 최대 추가 단락 수
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;e_ss&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,         &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 초기 스택 세그먼트(SS) 레지스터 값
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;e_sp&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,         &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 초기 스택 포인터(SP) 레지스터 값
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;e_csum&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,       &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 체크섬
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;e_ip&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,         &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 초기 명령어 포인터(IP) 레지스터 값
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;e_cs&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,         &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 초기 코드 세그먼트(CS) 레지스터 값
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;e_lfarlc&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,     &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 재배치 테이블의 파일 주소
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;e_ovno&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,       &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 오버레이 번호
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;e_res&lt;&#x2F;span&gt;&lt;span&gt;: [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;; 4],   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 예약된 공간
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;e_oemid&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; OEM 식별자
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;e_oeminfo&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; OEM 정보
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;e_res2&lt;&#x2F;span&gt;&lt;span&gt;: [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;; 10], &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 예약된 공간
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;e_lfanew&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,     &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; PE 헤더(NT 헤더)의 파일 오프셋. 가장 중요한 필드입니다.
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;일반적으로 현대 NT에서는 쓸모없는 정보들이다. 과거 호환성만 남겨놓으려고 만들어진 것이기 때문에 훑고 넘어가도 괜찮다. e_lfanew 필드가 중요한데, 이는 PE 헤더(NT 헤더)의 파일 오프셋을 가리킨다.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;dos-stub&quot;&gt;DOS Stub&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#dos-stub&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;현대 NT 헤더 다음에 있는 영역인데, 따로 중요한 부분은 아니다. DOS 환경에서 실행되는 파일이라면 이 영역에 있는 코드가 실행된다.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;nt-header&quot;&gt;NT Header&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#nt-header&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;NT 헤더 구조체는 1개의 시그니처 필드와 2개의 하위 구조체로 이루어져 있다. 시그니처 필드는 항상 &lt;code&gt;PE\0\0&lt;&#x2F;code&gt; 값을 가진다.&lt;&#x2F;p&gt;
+&lt;p&gt;말로만 해서는 뭐가 뭔지 모르니, 하나씩 톺아보자.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;nt-header-gujoce&quot;&gt;NT Header 구조체&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#nt-header-gujoce&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span&gt;#[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;repr&lt;&#x2F;span&gt;&lt;span&gt;(C)]
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;NTHeader {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;signature&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,                      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 시그니처: 항상 &amp;#39;PE\0\0&amp;#39; (0x50450000) 값을 가집니다.
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;file_header&lt;&#x2F;span&gt;&lt;span&gt;: FileHeader,             &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 파일의 물리적 레이아웃과 속성에 대한 정보
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;optional_header&lt;&#x2F;span&gt;&lt;span&gt;: OptionalHeader,     &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 파일의 논리적 실행에 필요한 정보 (이름과 달리 필수)
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;strong&gt;signature&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+항상 &lt;code&gt;PE\0\0&lt;&#x2F;code&gt; 값을 가진다.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;file_header&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+파일의 물리적 레이아웃과 속성에 대한 정보 (아래 FileHeader 구조체)&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;optional_header&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+파일의 논리적 실행에 필요한 정보 (아래 OptionalHeader 구조체)&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;fileheader-gujoce&quot;&gt;FileHeader 구조체&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#fileheader-gujoce&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span&gt;#[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;repr&lt;&#x2F;span&gt;&lt;span&gt;(C)]
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;FileHeader {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;machine&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,                &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 대상 CPU 아키텍처 (e.g., 0x8664 for x64, 0x14c for x86), WinNT.h에 정의된 값
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;number_of_sections&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,     &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 섹션 헤더 테이블에 있는 섹션의 수
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;time_date_stamp&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 파일이 생성된 시간 (Unix timestamp)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;pointer_to_symbol_table&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; COFF 심볼 테이블의 파일 오프셋 (디버깅용, 보통 0)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;number_of_symbols&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; COFF 심볼 테이블의 심볼 수
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;size_of_optional_header&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 바로 뒤에 오는 OptionalHeader의 크기
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;characteristics&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 파일의 속성을 나타내는 플래그 (e.g., 실행 가능한지, DLL인지, 커널인지 ...)
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;strong&gt;machine&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+대상 CPU 아키텍처 (e.g., 0x8664 for x64, 0x14c for x86)&lt;br &#x2F;&gt;
+상수는 &lt;code&gt;WinNT.h&lt;&#x2F;code&gt;에 정의되어 있다.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;number_of_sections&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+현재 PE파일의 섹션 헤더 테이블에 있는 섹션의 수&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;time_date_stamp&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+파일이 생성된 시간 (Unix timestamp)&lt;br &#x2F;&gt;
+변조가 가능하다.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;size_of_optional_header&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+OptionalHeader 구조체의 크기&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;characteristics&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+파일의 속성을 나타내는 플래그 (e.g., 실행 가능한지, DLL인지, 커널인지 ...)&lt;br &#x2F;&gt;
+이것도 동일하게 &lt;code&gt;WinNT.h&lt;&#x2F;code&gt;에 정의되어 있다.&lt;&#x2F;p&gt;
+&lt;p&gt;예를 들어보자:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;0001&lt;&#x2F;code&gt;: IMAGE_FILE_RELOCS_STRIPPED - 해당 파일에서 재배치 정보가 삭제됨&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;0002&lt;&#x2F;code&gt;: IMAGE_FILE_EXECUTABLE_IMAGE - 해당 파일은 실행가능한 EXE 파일임&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;0004&lt;&#x2F;code&gt;: IMAGE_FILE_LINE_NUMS_STRIPPED - 해당 파일은 라인 넘버가 제거됨&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;0008&lt;&#x2F;code&gt;: IMAGE_FILE_LOCAL_SYMS_STRIPPED - 해당 파일은 로컬 심볼 정보가 제거됨&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;0100&lt;&#x2F;code&gt;: IMAGE_FILE_32BIT_MACHINE - 해당 파일은 32비트 머신을 필요로 함&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;위 플래그들이 비트 or 연산으로 조합되어 있다.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;optionalheader-gujoce&quot;&gt;OptionalHeader 구조체&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#optionalheader-gujoce&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 32비트 PE 파일(PE32) 기준의 OptionalHeader
+&lt;&#x2F;span&gt;&lt;span&gt;#[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;repr&lt;&#x2F;span&gt;&lt;span&gt;(C)]
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;OptionalHeader {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; --- Standard COFF Fields ---
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;magic&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,                          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 매직 넘버: 0x10b (32-bit), 0x20b (64-bit)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;major_linker_version&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u8&lt;&#x2F;span&gt;&lt;span&gt;,            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 링커의 메이저 버전
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;minor_linker_version&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u8&lt;&#x2F;span&gt;&lt;span&gt;,            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 링커의 마이너 버전
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;size_of_code&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,                   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 모든 코드 섹션(.text)의 총 크기
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;size_of_initialized_data&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,       &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 초기화된 데이터 섹션들의 총 크기
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;size_of_uninitialized_data&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,     &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 초기화되지 않은 데이터 섹션(.bss)들의 총 크기
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;address_of_entry_point&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,         &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 프로그램 실행 시작 주소 (RVA: Relative Virtual Address)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;base_of_code&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,                   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 첫번째 코드 섹션의 시작 RVA
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;base_of_data&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,                   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 첫번째 데이터 섹션의 시작 RVA (64-bit에서는 이 필드가 없음)
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; --- Windows-specific Fields ---
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;image_base&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,                     &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 메모리에 로드될 때의 권장 시작 가상 주소
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;section_alignment&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 메모리에서의 섹션 정렬 단위 (보통 4KB)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;file_alignment&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,                 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 파일에서의 섹션 정렬 단위 (보통 512 바이트)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;major_operating_system_version&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 필요한 운영체제의 메이저 버전
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;minor_operating_system_version&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 필요한 운영체제의 마이너 버전
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;major_image_version&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 이미지의 메이저 버전
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;minor_image_version&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 이미지의 마이너 버전
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;major_subsystem_version&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 서브시스템의 메이저 버전
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;minor_subsystem_version&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 서브시스템의 마이너 버전
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;win32_version_value&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 예약된 필드, 항상 0
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;size_of_image&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,                  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 메모리에 로드된 전체 이미지의 크기
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;size_of_headers&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,                &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 모든 헤더(DOS, PE, Section)를 합친 크기
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;check_sum&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,                      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 이미지 파일 체크섬 (유효성 검사)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;subsystem&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,                      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 실행에 필요한 서브시스템 (e.g., GUI, Console)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;dll_characteristics&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; DLL 관련 보안 플래그 (e.g., ASLR, DEP)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;size_of_stack_reserve&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 처음에 예약할 스택의 크기
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;size_of_stack_commit&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,           &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 처음에 실제로 할당(커밋)할 스택의 크기
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;size_of_heap_reserve&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,           &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 처음에 예약할 힙의 크기
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;size_of_heap_commit&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 처음에 실제로 할당(커밋)할 힙의 크기
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;loader_flags&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,                   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 예약된 필드, 사용되지 않음
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;number_of_rva_and_sizes&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 아래 DataDirectory 배열의 유효한 항목 수 (보통 16)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data_directory&lt;&#x2F;span&gt;&lt;span&gt;: [ImageDataDirectory; 16], &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 데이터 디렉터리 배열
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; DataDirectory 배열의 각 항목을 위한 구조체
+&lt;&#x2F;span&gt;&lt;span&gt;#[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;repr&lt;&#x2F;span&gt;&lt;span&gt;(C)]
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;ImageDataDirectory {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;virtual_address&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 데이터의 시작 가상 주소 (RVA)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;size&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 해당 데이터의 크기 (바이트)
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;strong&gt;magic&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+매직 넘버: 0x10b (32비트), 0x20b (64비트)&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;major_linker_version&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+링커의 메이저 버전&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;minor_linker_version&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+링커의 마이너 버전&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;size_of_code&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+모든 코드 섹션(.text)의 총 크기&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;size_of_initialized_data&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+초기화된 데이터 섹션들의 총 크기&lt;br &#x2F;&gt;
+즉, 코드 섹션을 제외한 데이터 섹션들의 총 크기&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;size_of_uninitialized_data&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+초기화되지 않은 데이터 섹션(.bss)들의 총 크기&lt;br &#x2F;&gt;
+즉, 초기화되지 않은 데이터 섹션들의 총 크기&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;address_of_entry_point&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+프로그램 실행 시작 주소 (RVA: Relative Virtual Address)&lt;br &#x2F;&gt;
+실제로 프로그램 실행 시작 주소는 파일 오프셋이 아니라 RVA로 저장된다.&lt;br &#x2F;&gt;
+(image_base + address_of_entry_point)&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;base_of_code&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+첫번째 코드 섹션의 시작 RVA (64비트에서는 이 필드가 없음)&lt;br &#x2F;&gt;
+(image_base + base_of_code)&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;base_of_data&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+첫번째 데이터 섹션의 시작 RVA (64비트에서는 이 필드가 없음)&lt;br &#x2F;&gt;
+(image_base + base_of_data)&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;image_base&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+메모리에 로드될 때의 권장 시작 가상 주소&lt;&#x2F;p&gt;
+&lt;p&gt;보통 실행 파일은 0x400000 에서, 라이브러리(dll)은 0x10000000 에서 시작한다. 다만, 라이브러리의 경우 이미 점유된 상태라면 재배치가 된다.&lt;br &#x2F;&gt;
+재배치가 발생하면, DLL 내부의 주소 참조들을 실제 로드된 주소에 맞게 수정하는 작업이 추가로 필요하기 때문에 약간의 성능 저하가 발생할 수 있다.&lt;&#x2F;p&gt;
+&lt;p&gt;실행 파일(.exe)은 가상 메모리 공간에서 가장 먼저 자리를 잡기 때문에 일반적으로 재배치되지 않는다.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;section_alignment&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+메모리에서의 섹션 정렬 단위 (보통 4kb)&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;file_alignment&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+파일에서의 섹션 정렬 단위 (보통 512 바이트)&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;size_of_image&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+메모리에 로드된 전체 이미지의 크기&lt;br &#x2F;&gt;
+보통 다른 경우가 더 많다.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;size_of_headers&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+모든 헤더(DOS, PE, Section)를 합친 크기&lt;br &#x2F;&gt;
+&lt;code&gt;image_base&lt;&#x2F;code&gt;에서 &lt;code&gt;size_of_headers&lt;&#x2F;code&gt; 만큼 떨어진 곳에 첫번째 섹션이 위치한다.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;data_directory&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+데이터 디렉터리 배열&lt;br &#x2F;&gt;
+각 항목은 가상 주소와 size를 가지게 된다. 이 개념이 특히 중요한데, 데이터 디렉토리가 없다면, PE파일은 그냥 껍데기일 뿐이기 때문이다.&lt;&#x2F;p&gt;
+&lt;p&gt;인덱스 정보가 담긴 헤더 파일을 까보자.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;h&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-h &quot;&gt;&lt;code class=&quot;language-h&quot; data-lang=&quot;h&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_DIRECTORY_ENTRY_EXPORT          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Export Directory
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_DIRECTORY_ENTRY_IMPORT          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Import Directory
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_DIRECTORY_ENTRY_RESOURCE        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;2   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Resource Directory
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_DIRECTORY_ENTRY_EXCEPTION       &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;3   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Exception Directory
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_DIRECTORY_ENTRY_SECURITY        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;4   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Security Directory
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_DIRECTORY_ENTRY_BASERELOC       &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;5   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Base Relocation Table
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_DIRECTORY_ENTRY_DEBUG           &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;6   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Debug Directory
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F;      IMAGE_DIRECTORY_ENTRY_COPYRIGHT       7   &#x2F;&#x2F; (X86 usage)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_DIRECTORY_ENTRY_ARCHITECTURE    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;7   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Architecture Specific Data
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_DIRECTORY_ENTRY_GLOBALPTR       &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;8   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; RVA of GP
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_DIRECTORY_ENTRY_TLS             &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;9   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; TLS Directory
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;10   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Load Configuration Directory
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;11   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Bound Import Directory in headers
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_DIRECTORY_ENTRY_IAT            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;12   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Import Address Table
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;13   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Delay Load Import Descriptors
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;14   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; COM Runtime descriptor
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;여기서 중요하게 봐야할 디렉토리는 &lt;code&gt;EXPORT&lt;&#x2F;code&gt;, &lt;code&gt;IMPORT&lt;&#x2F;code&gt;, &lt;code&gt;RESOURCE&lt;&#x2F;code&gt;, &lt;code&gt;TLS&lt;&#x2F;code&gt;, &lt;code&gt;LOAD_CONFIG&lt;&#x2F;code&gt;, &lt;code&gt;IAT&lt;&#x2F;code&gt; 이다.&lt;&#x2F;p&gt;
+&lt;p&gt;우선 &lt;code&gt;TLS(Thread-Local-Storage)&lt;&#x2F;code&gt;와 &lt;code&gt;LOAD_CONFIG&lt;&#x2F;code&gt;가 중요한데, 이는 런타임에 추가적인 정보를 제공하기 위해 사용된다.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;EXPORT&lt;&#x2F;code&gt; 디렉토리는 다른 프로그램에서 사용할 수 있도록 외부에 제공하는 함수(내보내는 함수)들의 목록이다.
+보통 DLL에서 많이 사용한다. (ffi)&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;IMPORT&lt;&#x2F;code&gt; 디렉토리는 프로그램이 실행되기 위해 다른 DLL로부터 가져와야 하는 함수들의 목록이다.
+여기 메모리에 접근하면 &lt;code&gt;IMAGE_IMPORT_DESCRIPTOR&lt;&#x2F;code&gt; 배열이 시작되는 곳으로 이동한다.
+안에는 가져와야 할 DLL 별로 하나씩 &lt;code&gt;IMAGE_IMPORT_DESCRIPTOR&lt;&#x2F;code&gt; 구조체 배열이 있다.
+이 배열들의 마지막엔 &lt;code&gt;NULL Padding&lt;&#x2F;code&gt;이 들어가있다. 또한, 구조체 안에 &lt;code&gt;IAT&lt;&#x2F;code&gt; 내부의 포인터 주소가 있다.&lt;&#x2F;p&gt;
+&lt;p&gt;그래서 대충 동작을 살펴보면, 로더가 &lt;code&gt;IMPORT&lt;&#x2F;code&gt; 디렉토리로 가서, 모두 읽고 &lt;code&gt;CreateFileW&lt;&#x2F;code&gt; 같은걸로 로드한다. 그리고 그 주소를 &lt;code&gt;IAT(Import Address Table)&lt;&#x2F;code&gt;에 등록한다.&lt;&#x2F;p&gt;
+&lt;p&gt;바로 여기서 로드된 &lt;code&gt;IAT&lt;&#x2F;code&gt; 주소를 &lt;code&gt;IAT&lt;&#x2F;code&gt; 디렉토리에서 볼 수 있다.&lt;&#x2F;p&gt;
+&lt;p&gt;또한, 일반적으로 우리가 역공학 시 섹션 자체를 분석하려고 하는데, 이는 잘못됐다. 기본적으로 로더도 데이터 디렉토리를 읽지 않는다.&lt;&#x2F;p&gt;
+&lt;p&gt;섹션은 속이려면 얼마든지 속일 수 있다.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;segsyeon-hedeo&quot;&gt;섹션 헤더&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#segsyeon-hedeo&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;ImageSectionHeader {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u8&lt;&#x2F;span&gt;&lt;span&gt;; 8],
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;virtual_size&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;virtual_address&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;size_of_raw_data&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;pointer_to_raw_data&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;pointer_to_relocations&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;pointer_to_line_numbers&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;number_of_relocations&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;number_of_line_numbers&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;characteristics&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u32&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;위 내용에 섹션들이 저장된다. &lt;code&gt;.text.&lt;&#x2F;code&gt;든 &lt;code&gt;.data&lt;&#x2F;code&gt;든 모두 이 구조체에 저장된다.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;name&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+섹션 이름&lt;&#x2F;p&gt;
+&lt;p&gt;아래는 일반적인 섹션 리스트다.&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;color:#c0c5ce;&quot;&gt;&lt;code&gt;&lt;span&gt;.text :
+&lt;&#x2F;span&gt;&lt;span&gt;코드, 실행, 읽기 속성을 지니며 컴파일 후의 결과가 이곳에 저장된다. 즉, 이 섹션은 실행되는 코드들이 들어가는 섹션이다.
+&lt;&#x2F;span&gt;&lt;span&gt;.data :
+&lt;&#x2F;span&gt;&lt;span&gt;초기화, 읽기, 쓰기 속성을 지니며 초기화된 전역 변수를 가진다.
+&lt;&#x2F;span&gt;&lt;span&gt;.rdata :
+&lt;&#x2F;span&gt;&lt;span&gt;초기화, 읽기 속성을 지니며 문자열 상수나 const로 선언된 변수처럼 읽기만 가능한 읽기 전용 데이터 섹션이다.
+&lt;&#x2F;span&gt;&lt;span&gt;.bss :
+&lt;&#x2F;span&gt;&lt;span&gt;비초기화, 읽기, 쓰기 속성을 지니며 초기화되지 않은 전역 변수의 섹션이다.
+&lt;&#x2F;span&gt;&lt;span&gt;.edata :
+&lt;&#x2F;span&gt;&lt;span&gt;초기화, 읽기 속성을 지니며 EAT와 관련된 정보가 들어가 있는 섹션이다.
+&lt;&#x2F;span&gt;&lt;span&gt;.idata :
+&lt;&#x2F;span&gt;&lt;span&gt;초기화, 읽기, 쓰기 속성을 지니며 IAT와 관련된 정보가 들어가 있는 섹션이다.
+&lt;&#x2F;span&gt;&lt;span&gt;.rsrc
+&lt;&#x2F;span&gt;&lt;span&gt;초기화, 읽기 속성을 지니며 리소스가 저장되는 섹션이다.
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;strong&gt;virtual_size&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+섹션의 가상 크기&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;virtual_address&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+섹션의 가상 주소&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;size_of_raw_data&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+섹션의 실제 크기&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;pointer_to_raw_data&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+섹션의 실제 데이터가 저장된 파일 오프셋&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;pointer_to_relocations&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+섹션의 재배치 정보가 저장된 파일 오프셋&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;pointer_to_line_numbers&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+섹션의 라인 넘버가 저장된 파일 오프셋&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;number_of_relocations&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+섹션의 재배치 정보의 수&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;number_of_line_numbers&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+섹션의 라인 넘버의 수&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;characteristics&lt;&#x2F;strong&gt;&lt;br &#x2F;&gt;
+섹션의 속성을 나타내는 플래그 (e.g., 실행 가능한지.. 등등)&lt;&#x2F;p&gt;
+&lt;p&gt;헤더 파일을 까보자.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;h&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-h &quot;&gt;&lt;code class=&quot;language-h&quot; data-lang=&quot;h&quot;&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F;      IMAGE_SCN_TYPE_REG                   0x00000000  &#x2F;&#x2F; Reserved.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F;      IMAGE_SCN_TYPE_DSECT                 0x00000001  &#x2F;&#x2F; Reserved.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F;      IMAGE_SCN_TYPE_NOLOAD                0x00000002  &#x2F;&#x2F; Reserved.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F;      IMAGE_SCN_TYPE_GROUP                 0x00000004  &#x2F;&#x2F; Reserved.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_TYPE_NO_PAD                &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00000008  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Reserved.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F;      IMAGE_SCN_TYPE_COPY                  0x00000010  &#x2F;&#x2F; Reserved.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_CNT_CODE                   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00000020  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Section contains code.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_CNT_INITIALIZED_DATA       &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00000040  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Section contains initialized data.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_CNT_UNINITIALIZED_DATA     &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00000080  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Section contains uninitialized data.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_LNK_OTHER                  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00000100  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Reserved.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_LNK_INFO                   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00000200  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Section contains comments or some other type of information.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F;      IMAGE_SCN_TYPE_OVER                  0x00000400  &#x2F;&#x2F; Reserved.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_LNK_REMOVE                 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00000800  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Section contents will not become part of image.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_LNK_COMDAT                 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00001000  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Section contents comdat.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F;                                           0x00002000  &#x2F;&#x2F; Reserved.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F;      IMAGE_SCN_MEM_PROTECTED - Obsolete   0x00004000
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_NO_DEFER_SPEC_EXC          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00004000  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Reset speculative exceptions handling bits in the TLB entries for this section.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_GPREL                      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00008000  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Section content can be accessed relative to GP
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_MEM_FARDATA                &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00008000
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F;      IMAGE_SCN_MEM_SYSHEAP  - Obsolete    0x00010000
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_MEM_PURGEABLE              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00020000
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_MEM_16BIT                  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00020000
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_MEM_LOCKED                 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00040000
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_MEM_PRELOAD                &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00080000
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_ALIGN_1BYTES               &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00100000  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_ALIGN_2BYTES               &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00200000  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_ALIGN_4BYTES               &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00300000  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_ALIGN_8BYTES               &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00400000  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_ALIGN_16BYTES              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00500000  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Default alignment if no others are specified.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_ALIGN_32BYTES              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00600000  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_ALIGN_64BYTES              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00700000  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_ALIGN_128BYTES             &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00800000  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_ALIGN_256BYTES             &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00900000  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_ALIGN_512BYTES             &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00A00000  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_ALIGN_1024BYTES            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00B00000  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_ALIGN_2048BYTES            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00C00000  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_ALIGN_4096BYTES            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00D00000  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_ALIGN_8192BYTES            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00E00000  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Unused                                    0x00F00000
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_ALIGN_MASK                 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x00F00000
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_LNK_NRELOC_OVFL            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x01000000  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Section contains extended relocations.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_MEM_DISCARDABLE            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x02000000  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Section can be discarded.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_MEM_NOT_CACHED             &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x04000000  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Section is not cachable.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_MEM_NOT_PAGED              &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x08000000  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Section is not pageable.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_MEM_SHARED                 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x10000000  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Section is shareable.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_MEM_EXECUTE                &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x20000000  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Section is executable.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_MEM_READ                   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x40000000  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Section is readable.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span&gt;IMAGE_SCN_MEM_WRITE                  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0x80000000  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Section is writeable.
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;여기에 권한 정보들이 있다. 그러니까, 섹션 이름이 뭐든 간에 이 플래그들로 대충 무슨 역할을 하는지 분석할 수 있다는 의미다.&lt;&#x2F;p&gt;
+&lt;p&gt;이것도 동일하게 비트 or 연산자로 권한 조합이 가능하다.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;camjo&quot;&gt;참조&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#camjo&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;ko.wikipedia.org&#x2F;wiki&#x2F;PE_%ED%8F%AC%EB%A7%B7&quot;&gt;https:&#x2F;&#x2F;ko.wikipedia.org&#x2F;wiki&#x2F;PE_%ED%8F%AC%EB%A7%B7&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;jeongzero.oopy.io&#x2F;ea359704-1d23-479f-96b0-ac4014c0cda5&quot;&gt;https:&#x2F;&#x2F;jeongzero.oopy.io&#x2F;ea359704-1d23-479f-96b0-ac4014c0cda5&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</content>
+        
+    </entry>
+</feed>

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+<head>
+    
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>devcontainer 도입기</title>
+
+
+<meta name="keywords" content="programming, hacking, security, coding, developer, develop">
+
+
+
+<meta name="description" content="레거시 자바 프로젝트에 devcontainer를 도입해 재현 가능한 개발 환경을 구성한 사례와 설정을 공유합니다.">
+
+
+
+
+
+<link rel="canonical" href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;posts&#x2F;2025-07-11-dev-container&#x2F;">
+
+
+<link rel="stylesheet" href="https://wHoIsDReAmer.github.io/blog/css/includes/scroll-bar.css">
+<link rel="stylesheet" href="https://wHoIsDReAmer.github.io/blog/css/styles.css">
+<link rel="stylesheet" href="https://wHoIsDReAmer.github.io/blog/css/override.css">
+
+
+
+
+
+
+
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+    </style>
+    
+</noscript>
+
+
+
+    
+</head>
+<body class=" dark" id="top">
+    
+    
+<script>
+    if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    }
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;" accesskey="h" title="CWLog (Alt + H)">
+                CWLog
+            </a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+                <ul class="lang-switch">
+                    <li></li>
+                </ul>
+            </div>
+        </div>
+        
+    </nav>
+</header>
+
+    
+    <main class="main">
+        
+<article class="post-single">
+  <header class="post-header">
+      <div class="breadcrumbs">
+          <a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;">Home</a>&nbsp;»&nbsp;
+          <a href="https://wHoIsDReAmer.github.io/blog/posts/">Posts</a>&nbsp;»&nbsp;
+          <a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;posts&#x2F;2025-07-11-dev-container&#x2F;">devcontainer 도입기</a>
+      </div>
+      <h1 class="post-title">devcontainer 도입기</h1>
+      
+      
+      <div class="post-description">
+          레거시 자바 프로젝트에 devcontainer를 도입해 재현 가능한 개발 환경을 구성한 사례와 설정을 공유합니다.
+      </div>
+      
+      
+      <div class="post-meta">
+      
+
+
+
+
+
+
+
+
+
+
+<span title="2025-07-11 00:00:00 +0000">2025-07-11</span>&nbsp;·&nbsp;
+
+      
+      </div>
+      
+  </header>
+
+  
+  
+
+<div class="toc">
+    <details  open>
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner">
+            <ul>
+                
+                <li>
+                    <a href="#baegyeong" aria-label="배경">배경</a>
+                    
+                </li>
+                
+                <li>
+                    <a href="#haegyeol" aria-label="해결">해결</a>
+                    
+                </li>
+                
+                <li>
+                    <a href="#guseong" aria-label="구성">구성</a>
+                    
+                </li>
+                
+                <li>
+                    <a href="#gyeolron" aria-label="결론">결론</a>
+                    
+                </li>
+                
+                <li>
+                    <a href="#camjo" aria-label="참조">참조</a>
+                    
+                </li>
+                
+            </ul>
+        </div>
+    </details>
+</div>
+
+
+  
+
+  
+  <div class="post-content">
+      <h2 id="baegyeong">배경<a class="anchor" aria-hidden="true" href="#baegyeong" hidden="">#</a>
+</h2>
+<p>근래에 회사에서 레거시 프로젝트를 수정하는 업무를 맡았다. 근데 스택이 너무 레거시 스택(자바 1.8, 톰캣, 오라클 11g)이라 초기 환경 설정이 힘들 것 같았다. 호스트에는 JDK 17이 깔려있는데 말이다.</p>
+<p>스택은 트레이드오프에 따라 결정할 수 있으니 크게 거슬리는 건 없었는데, 진짜 문제는 기술 부채가 너무 심각했다.</p>
+<ul>
+<li><code>Maven</code>은 예전에 만들다 말았는지 컴파일 불가</li>
+<li>내부 소스 상태는 컨벤션이라고는 볼 수 없는 코드</li>
+<li>빌드가 이클립스에 한정적이어서 나머지 IDE에서는 빌드 불가</li>
+</ul>
+<p>이 중에서 제일 문제는 <strong>빌드가 이클립스에서만 가능하다는 것</strong>이다.</p>
+<h2 id="haegyeol">해결<a class="anchor" aria-hidden="true" href="#haegyeol" hidden="">#</a>
+</h2>
+<p>해결책으로 나는 <code>devcontainer</code>를 도입했다. 실제로 사원 중에 VSC로 개발하는 인원이 대다수였고, 이클립스를 '제대로' 사용할 줄 아는 분은 없었다. 이때매 디버깅 시간도 오래 걸리고 잔버그로 고생하는 분들이 많았다.</p>
+<p>기존 이클립스 IDE와 호환성을 유지하기 위해 다음과 같은 원칙을 준수했다:</p>
+<ul>
+<li>기존 스택의 버전을 동일하게 사용한다.</li>
+<li>기존 스택의 설정을 그대로 유지한다.</li>
+<li>IDE 설정을 건드리지 않는다.</li>
+</ul>
+<h2 id="guseong">구성<a class="anchor" aria-hidden="true" href="#guseong" hidden="">#</a>
+</h2>
+<p><code>devcontainer</code>를 구성하는 방법에는 일반적으로 두가지가 있다.</p>
+<ul>
+<li>컨테이너 이미지를 직접 만들어서 사용하는 방법</li>
+<li>컨테이너 이미지를 사용하는 방법</li>
+</ul>
+<p>현재 유즈케이스에서는 따로 현대적인 스택도 아니고 이미지도 적다보니, 컨테이너 이미지를 직접 만드는 방법을 택했다.</p>
+<p>우선 컨테이너 이미지를 입히기 전, 환경 구축을 먼저 해보자
+프로젝트 루트에 <code>.devcontainer</code> 폴더를 만들고, 그 안에 <code>devcontainer.json</code> 파일을 만든다.</p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>.devcontainer/
+</span><span>├── devcontainer.json
+</span><span>└── Dockerfile
+</span></code></pre>
+<p>아래가 도커 이미지를 직접 만들어 쓰는 방법이고,</p>
+<pre data-lang="json" style="background-color:#2b303b;color:#c0c5ce;" class="language-json "><code class="language-json" data-lang="json"><span>{
+</span><span>    &quot;</span><span style="color:#a3be8c;">name</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">devcontainer</span><span>&quot;,
+</span><span>
+</span><span>    </span><span style="color:#65737e;">// 도커 이미지 빌드 설정 (직접 이미지를 빌드할 때)
+</span><span>    &quot;</span><span style="color:#a3be8c;">dockerFile</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">Dockerfile</span><span>&quot;,
+</span><span>    &quot;</span><span style="color:#a3be8c;">context</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">.</span><span>&quot;,
+</span><span>
+</span><span>    </span><span style="color:#65737e;">// 도커 이미지 사용 설정 (이미지가 미리 빌드되어 있을 때)
+</span><span>    &quot;</span><span style="color:#a3be8c;">image</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">devcontainer/devcontainer:latest</span><span>&quot;,
+</span><span>
+</span><span>    </span><span style="color:#65737e;">// 위 둘 중 택일
+</span><span>
+</span><span>    </span><span style="color:#65737e;">// ------- 추가 설정 -------
+</span><span>
+</span><span>    </span><span style="color:#65737e;">// VSC 설정
+</span><span>    &quot;</span><span style="color:#a3be8c;">settings</span><span>&quot;: {
+</span><span>        &quot;</span><span style="color:#a3be8c;">terminal.integrated.shell.linux</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">/bin/bash</span><span>&quot;,
+</span><span>        &quot;</span><span style="color:#a3be8c;">java.home</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">/usr/lib/jvm/java-17-openjdk-amd64</span><span>&quot;,
+</span><span>    },
+</span><span>
+</span><span>    </span><span style="color:#65737e;">// VSC 익스텐션 (devcontainer가 연결되면 자동으로 설치됨)
+</span><span>    &quot;</span><span style="color:#a3be8c;">extensions</span><span>&quot;: [
+</span><span>        &quot;</span><span style="color:#a3be8c;">vscjava.vscode-java-pack</span><span>&quot;,
+</span><span>    ],
+</span><span>
+</span><span>
+</span><span>    </span><span style="color:#65737e;">// 컨테이너 내부 포트를 호스트에 포워딩
+</span><span>    &quot;</span><span style="color:#a3be8c;">forwardPorts</span><span>&quot;: [</span><span style="color:#d08770;">8080</span><span>],
+</span><span>
+</span><span>    </span><span style="color:#65737e;">// 컨테이너 내부 사용자 이름 (기본값은 root)
+</span><span>    &quot;</span><span style="color:#a3be8c;">remoteUser</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">dev</span><span>&quot;,
+</span><span>}
+</span></code></pre>
+<p>아래가 배포된 이미지를 사용하는 방법이다.</p>
+<pre data-lang="json" style="background-color:#2b303b;color:#c0c5ce;" class="language-json "><code class="language-json" data-lang="json"><span>{
+</span><span>    &quot;</span><span style="color:#a3be8c;">name</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">devcontainer</span><span>&quot;,
+</span><span>    &quot;</span><span style="color:#a3be8c;">dockerFile</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">Dockerfile</span><span>&quot;,
+</span><span>    &quot;</span><span style="color:#a3be8c;">context</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">.</span><span>&quot;,
+</span><span>
+</span><span>    </span><span style="color:#65737e;">// ------- 추가 설정 -------
+</span><span>
+</span><span>    </span><span style="color:#65737e;">// VSC 설정
+</span><span>
+</span><span>    &quot;</span><span style="color:#a3be8c;">image</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">devcontainer/devcontainer:latest</span><span>&quot;,
+</span><span>}
+</span></code></pre>
+<hr />
+<p>특별한 경우를 제외하고는 <strong>유저의 권한은 <code>root</code>로 설정하지 않는 것이 보안에 바람직하다</strong>. 컨테이너 내부에서 <code>root</code> 권한으로 실행되는 프로세스가 해킹당할 경우, 호스트 시스템에도 <strong>심각한 보안 위험</strong>이 될 수 있기 때문이다. 따라서 일반적으로는 <code>remoteUser</code> 설정을 통해 일반 사용자 권한으로 실행하는 것이 권장된다. (참고: <a href="https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user">https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user</a>)</p>
+<p>이제 VSC의 확장 프로그램에서 <code>devcontainer</code>를 검색하고 받아주자</p>
+<p><img src="../../images/devcontainer_extension.png" alt="devcontainer 익스텐션 사진" /></p>
+<blockquote>
+<p>저는 커서이기 때문에 해당 확장 프로그램을 설치함</p>
+</blockquote>
+<p>이제 프로젝트 루트에서 <code>Ctrl + Shift + P</code>를 눌러 <code>Dev Containers: Reopen in Container</code>를 선택하면 된다.</p>
+<h2 id="gyeolron">결론<a class="anchor" aria-hidden="true" href="#gyeolron" hidden="">#</a>
+</h2>
+<p><code>devcontainer</code>도 만능은 아니다. 한 프로젝트 당 <code>GuestOS</code>를 하나씩 할당하기에 만약 여러 프로젝트를 킨다면 램을 비용이 꽤 든다.</p>
+<p>좋은 점은 보안적으로 좋을 것이다. 유저를 제한해두면 해당 컨테이너 내에서 어떤 프로세스를 실행하더라도 호스트 시스템에 영향을 미치지 않는다. (제로데이 취약점이 있을수도 있긴 함)</p>
+<h2 id="camjo">참조<a class="anchor" aria-hidden="true" href="#camjo" hidden="">#</a>
+</h2>
+<ul>
+<li><a href="https://code.visualstudio.com/remote/advancedcontainers/overview">https://code.visualstudio.com/remote/advancedcontainers/overview</a></li>
+</ul>
+
+  </div>
+  
+
+  <footer class="post-footer">
+      
+      <ul class="post-tags">
+          
+          
+          <li><a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;tags&#x2F;devcontainer&#x2F;">devcontainer</a></li>
+          
+          
+          <li><a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;tags&#x2F;docker&#x2F;">docker</a></li>
+          
+      </ul>
+      
+
+    
+    
+
+
+<nav class="paginav">
+    
+    <a class="prev" href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;posts&#x2F;2025-06-08-pe-format&#x2F;">
+        <span class="title">« Prev</span>
+        <br>
+        <span>PE 포맷 파일 구조</span>
+    </a>
+    
+    
+    <a class="next" href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;posts&#x2F;2025-08-06-soa-aos&#x2F;">
+        <span class="title">Next »</span>
+        <br>
+        <span>SOA와 AOS</span>
+    </a>
+    
+</nav>
+
+
+    
+  </footer>
+
+</article>
+
+    </main>
+    
+    <footer class="footer">
+    
+    <span>&copy; 2025 <a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;"></a></span>
+    
+    <span>
+        Powered by
+        <a href="https://www.getzola.org/" rel="noopener noreferrer" target="_blank">Zola</a> &
+        <a href="https://github.com/cydave/zola-theme-papermod" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+
+
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+
+
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+
+
+
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+
+
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerText = 'copy';
+        function copyingDone() {
+            copybutton.innerText = 'copied!';
+            setTimeout(() => {
+                copybutton.innerText = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                var content = codeblock.textContent;
+                if(codeblock.firstChild.tagName == 'TABLE') {
+                    content = Array(...codeblock.firstChild.getElementsByTagName('span')).map((span) => { return span.textContent; }).join('');
+                }
+                navigator.clipboard.writeText(content);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            // td containing LineNos
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            // table containing LineNos and code
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            // code blocks not having highlight as parent class
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+
+
+
+    
+</body>
+</html>

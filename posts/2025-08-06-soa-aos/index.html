@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+<head>
+    
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>SOA와 AOS</title>
+
+
+<meta name="keywords" content="programming, hacking, security, coding, developer, develop">
+
+
+
+<meta name="description" content="데이터 레이아웃 SoA&#x2F;AoS&#x2F;AoSoA의 특성과 SIMD·캐시 관점 성능 비교를 정리합니다.">
+
+
+
+
+
+<link rel="canonical" href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;posts&#x2F;2025-08-06-soa-aos&#x2F;">
+
+
+<link rel="stylesheet" href="https://wHoIsDReAmer.github.io/blog/css/includes/scroll-bar.css">
+<link rel="stylesheet" href="https://wHoIsDReAmer.github.io/blog/css/styles.css">
+<link rel="stylesheet" href="https://wHoIsDReAmer.github.io/blog/css/override.css">
+
+
+
+
+
+
+
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+    </style>
+    
+</noscript>
+
+
+
+    
+</head>
+<body class=" dark" id="top">
+    
+    
+<script>
+    if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    }
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;" accesskey="h" title="CWLog (Alt + H)">
+                CWLog
+            </a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+                <ul class="lang-switch">
+                    <li></li>
+                </ul>
+            </div>
+        </div>
+        
+    </nav>
+</header>
+
+    
+    <main class="main">
+        
+<article class="post-single">
+  <header class="post-header">
+      <div class="breadcrumbs">
+          <a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;">Home</a>&nbsp;»&nbsp;
+          <a href="https://wHoIsDReAmer.github.io/blog/posts/">Posts</a>&nbsp;»&nbsp;
+          <a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;posts&#x2F;2025-08-06-soa-aos&#x2F;">SOA와 AOS</a>
+      </div>
+      <h1 class="post-title">SOA와 AOS</h1>
+      
+      
+      <div class="post-description">
+          데이터 레이아웃 SoA&#x2F;AoS&#x2F;AoSoA의 특성과 SIMD·캐시 관점 성능 비교를 정리합니다.
+      </div>
+      
+      
+      <div class="post-meta">
+      
+
+
+
+
+
+
+
+
+
+
+<span title="2025-08-06 00:00:00 +0000">2025-08-06</span>&nbsp;·&nbsp;
+
+      
+      </div>
+      
+  </header>
+
+  
+  
+
+<div class="toc">
+    <details  open>
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner">
+            <ul>
+                
+                <li>
+                    <a href="#soa-structure-of-arrays" aria-label="SoA (Structure of Arrays)">SoA (Structure of Arrays)</a>
+                    
+                </li>
+                
+                <li>
+                    <a href="#aos-array-of-structures" aria-label="AoS (Array of Structures)">AoS (Array of Structures)</a>
+                    
+                </li>
+                
+                <li>
+                    <a href="#aosoa-array-of-structures-of-arrays" aria-label="AoSoA (Array of Structures of Arrays)">AoSoA (Array of Structures of Arrays)</a>
+                    
+                </li>
+                
+            </ul>
+        </div>
+    </details>
+</div>
+
+
+  
+
+  
+  <div class="post-content">
+      <p>근래에 LLM이 떠오르며 SIMD 연산이 중요해지고 그에 따라 자연스럽게 데이터를 다루는 레이아웃을 고민하게 되었다. 여기엔 세가지가 있는데</p>
+<ul>
+<li>SoA(Structure of Arrays)</li>
+<li>AoS(Array of Structures)</li>
+<li>AoSoA(Array of Structures of Arrays)</li>
+</ul>
+<p>각각의 레이아웃 장단점이 뭘까?</p>
+<h2 id="soa-structure-of-arrays">SoA (Structure of Arrays)<a class="anchor" aria-hidden="true" href="#soa-structure-of-arrays" hidden="">#</a>
+</h2>
+<p>SoA는 구조체 안에 배열을 담는 방식이다. 예를 들어, 다음과 같은 구조체가 있다고 하자.</p>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#b48ead;">const</span><span> N: </span><span style="color:#b48ead;">usize </span><span>= </span><span style="color:#d08770;">100</span><span>;
+</span><span>
+</span><span style="color:#b48ead;">struct </span><span>Person {
+</span><span>    </span><span style="color:#bf616a;">age</span><span>: [</span><span style="color:#b48ead;">i32</span><span>; N],
+</span><span>    </span><span style="color:#bf616a;">height</span><span>: [</span><span style="color:#b48ead;">f32</span><span>; N],
+</span><span>}
+</span></code></pre>
+<p>이 방식은 다음과 같은 상황일 때 이점이 크다.</p>
+<ul>
+<li>SIMD 연산이 필요할 때 (벡터 집약 연산이 필요할 떄)</li>
+<li>모든 데이터를 업데이트할 때 (CPU 캐시 히트율이 올라감)</li>
+</ul>
+<p>단점도 있다.</p>
+<ul>
+<li>구조체 단위 접근 시 불리 (캐시 히트율이 떨어짐)</li>
+<li>가독성 저하 (코드 관리 및 데이터 관리가 어려움)</li>
+</ul>
+<p>특수한 유즈케이스가 아니면 잘 쓰지 않는다.</p>
+<h2 id="aos-array-of-structures">AoS (Array of Structures)<a class="anchor" aria-hidden="true" href="#aos-array-of-structures" hidden="">#</a>
+</h2>
+<p>AoS는 구조체를 배열로 만드는 레이아웃 방법이다. 흔히 일반적인 개발자라면 많이 볼 수 있는 방법이다.</p>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#b48ead;">struct </span><span>Person {
+</span><span>    </span><span style="color:#bf616a;">age</span><span>: </span><span style="color:#b48ead;">i32</span><span>,
+</span><span>    </span><span style="color:#bf616a;">height</span><span>: </span><span style="color:#b48ead;">f32</span><span>,
+</span><span>}
+</span><span>
+</span><span style="color:#b48ead;">let</span><span> people: Vec&lt;Person&gt; = vec![
+</span><span>    Person { age: </span><span style="color:#d08770;">20</span><span>, height: </span><span style="color:#d08770;">170.0 </span><span>},
+</span><span>    Person { age: </span><span style="color:#d08770;">21</span><span>, height: </span><span style="color:#d08770;">175.0 </span><span>},
+</span><span>    </span><span style="color:#65737e;">// ...
+</span><span>];
+</span></code></pre>
+<p>이 방식은 각각의 구조체에 접근할 때 효율이 좋다.</p>
+<p>다만, 한번에 대량의 데이터에 접근하려면 모든 구조체에 접근해야 하기 떄문에 비효율적이다.</p>
+<h1 id="aosoa-array-of-structures-of-arrays">AoSoA (Array of Structures of Arrays)<a class="anchor" aria-hidden="true" href="#aosoa-array-of-structures-of-arrays" hidden="">#</a>
+</h1>
+<p>이건 위 두 방식의 장점을 합쳐 <code>SIMD</code> 연산에 특화된 설계 방식이다.</p>
+<p>간단한데, SoA 방식을 사용하고 그걸 다시 AoS 방식으로 묶는 방법이다.</p>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#b48ead;">struct </span><span>PersonBlock {
+</span><span>    </span><span style="color:#bf616a;">age</span><span>: [</span><span style="color:#b48ead;">i32</span><span>; 8],
+</span><span>    </span><span style="color:#bf616a;">height</span><span>: [</span><span style="color:#b48ead;">f32</span><span>; 8],
+</span><span>}
+</span><span>
+</span><span style="color:#b48ead;">let</span><span> people: Vec&lt;PersonBlock&gt; = vec![
+</span><span>    PersonBlock {
+</span><span>        age: [</span><span style="color:#d08770;">20</span><span>, </span><span style="color:#d08770;">21</span><span>, </span><span style="color:#d08770;">22</span><span>, </span><span style="color:#d08770;">23</span><span>, </span><span style="color:#d08770;">24</span><span>, </span><span style="color:#d08770;">25</span><span>, </span><span style="color:#d08770;">26</span><span>, </span><span style="color:#d08770;">27</span><span>],
+</span><span>        height: [</span><span style="color:#d08770;">170.0</span><span>, </span><span style="color:#d08770;">175.0</span><span>, </span><span style="color:#d08770;">180.0</span><span>, </span><span style="color:#d08770;">185.0</span><span>, </span><span style="color:#d08770;">190.0</span><span>, </span><span style="color:#d08770;">195.0</span><span>, </span><span style="color:#d08770;">200.0</span><span>, </span><span style="color:#d08770;">205.0</span><span>],
+</span><span>    },
+</span><span>    PersonBlock {
+</span><span>        age: [</span><span style="color:#d08770;">28</span><span>, </span><span style="color:#d08770;">29</span><span>, </span><span style="color:#d08770;">30</span><span>, </span><span style="color:#d08770;">31</span><span>, </span><span style="color:#d08770;">32</span><span>, </span><span style="color:#d08770;">33</span><span>, </span><span style="color:#d08770;">34</span><span>, </span><span style="color:#d08770;">35</span><span>],
+</span><span>        height: [</span><span style="color:#d08770;">210.0</span><span>, </span><span style="color:#d08770;">215.0</span><span>, </span><span style="color:#d08770;">220.0</span><span>, </span><span style="color:#d08770;">225.0</span><span>, </span><span style="color:#d08770;">230.0</span><span>, </span><span style="color:#d08770;">235.0</span><span>, </span><span style="color:#d08770;">240.0</span><span>, </span><span style="color:#d08770;">245.0</span><span>],
+</span><span>    },
+</span><span>    </span><span style="color:#65737e;">// ...
+</span><span>];
+</span></code></pre>
+<p>이렇게 하면 한번에 8개(256비트, SIMD 연산에 최적화됨)의 데이터에 접근할 수 있고, 모든 데이터를 업데이트할 때도 효율적이다.</p>
+<p>또한 SoA 로 설계된 데이터에선 SIMD 연산을 할 때 직접 오프셋과 끝을 정해줘야 했는데, AoSoA 방식에서는 블록 단위로 자연스럽게 SIMD 연산이 가능하다는 장점이 있다.</p>
+<p>이제 대충 물리 시뮬레이터를 만들어서 벤치마킹을 해보자.</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># AoS 모든 위치 업데이트 벤치마크
+</span><span style="color:#bf616a;">AoS</span><span> update positions    time:   </span><span style="color:#b48ead;">[</span><span>2.8440 ms 2.8596 ms 2.8775 ms</span><span style="color:#b48ead;">]
+</span><span>                        </span><span style="color:#bf616a;">change: </span><span style="color:#b48ead;">[</span><span>−2.5705% −1.7786% −0.9646%</span><span style="color:#b48ead;">]</span><span> (p = 0.00 &lt; </span><span style="color:#d08770;">0</span><span>.05)
+</span><span>                        </span><span style="color:#bf616a;">Change</span><span> within noise threshold.
+</span><span style="color:#bf616a;">Found</span><span> 10 outliers among 100 measurements (10.00%)
+</span><span>  </span><span style="color:#bf616a;">6</span><span> (6.00%) </span><span style="color:#bf616a;">high</span><span> mild
+</span><span>  </span><span style="color:#bf616a;">4</span><span> (4.00%) </span><span style="color:#bf616a;">high</span><span> severe
+</span><span>
+</span><span style="color:#bf616a;">Benchmarking</span><span> SoA update positions: Warming up for 3.0000 s
+</span><span style="color:#bf616a;">Warning:</span><span> Unable to complete 100 samples in 5.0s. You may wish to increase target time to 6.8s, enable flat sampling, or reduce sample count to 60.
+</span><span>
+</span><span style="color:#65737e;"># SoA 모든 위치 업데이트 벤치마크
+</span><span style="color:#bf616a;">SoA</span><span> update positions    time:   </span><span style="color:#b48ead;">[</span><span>1.3333 ms 1.3451 ms 1.3598 ms</span><span style="color:#b48ead;">]
+</span><span>                        </span><span style="color:#bf616a;">change: </span><span style="color:#b48ead;">[</span><span>−2.3746% −1.1937% −0.0467%</span><span style="color:#b48ead;">]</span><span> (p = 0.05 &gt; </span><span style="color:#d08770;">0</span><span>.05)
+</span><span>                        </span><span style="color:#bf616a;">No</span><span> change in performance detected.
+</span><span style="color:#bf616a;">Found</span><span> 12 outliers among 100 measurements (12.00%)
+</span><span>  </span><span style="color:#bf616a;">5</span><span> (5.00%) </span><span style="color:#bf616a;">high</span><span> mild
+</span><span>  </span><span style="color:#bf616a;">7</span><span> (7.00%) </span><span style="color:#bf616a;">high</span><span> severe
+</span><span>
+</span><span style="color:#65737e;"># AoSoA 모든 위치 업데이트 벤치마크
+</span><span style="color:#bf616a;">AoSoA</span><span> update positions  time:   </span><span style="color:#b48ead;">[</span><span>2.7560 ms 2.7724 ms 2.7909 ms</span><span style="color:#b48ead;">]
+</span><span>                        </span><span style="color:#bf616a;">change: </span><span style="color:#b48ead;">[</span><span>−1.3765% −0.5173% +0.4083%</span><span style="color:#b48ead;">]</span><span> (p = 0.26 &gt; </span><span style="color:#d08770;">0</span><span>.05)
+</span><span>                        </span><span style="color:#bf616a;">No</span><span> change in performance detected.
+</span><span style="color:#bf616a;">Found</span><span> 14 outliers among 100 measurements (14.00%)
+</span><span>  </span><span style="color:#bf616a;">8</span><span> (8.00%) </span><span style="color:#bf616a;">high</span><span> mild
+</span><span>  </span><span style="color:#bf616a;">6</span><span> (6.00%) </span><span style="color:#bf616a;">high</span><span> severe
+</span><span>
+</span><span style="color:#65737e;"># ------------------------------------------------------------
+</span><span>
+</span><span style="color:#65737e;"># AoS 운동 에너지 계산 벤치마크
+</span><span style="color:#bf616a;">AoS</span><span> kinetic energy      time:   </span><span style="color:#b48ead;">[</span><span>2.3260 ms 2.3430 ms 2.3620 ms</span><span style="color:#b48ead;">]
+</span><span>                        </span><span style="color:#bf616a;">change: </span><span style="color:#b48ead;">[</span><span>−3.2449% −2.0336% −0.9182%</span><span style="color:#b48ead;">]</span><span> (p = 0.00 &lt; </span><span style="color:#d08770;">0</span><span>.05)
+</span><span>                        </span><span style="color:#bf616a;">Change</span><span> within noise threshold.
+</span><span style="color:#bf616a;">Found</span><span> 11 outliers among 100 measurements (11.00%)
+</span><span>  </span><span style="color:#bf616a;">6</span><span> (6.00%) </span><span style="color:#bf616a;">high</span><span> mild
+</span><span>  </span><span style="color:#bf616a;">5</span><span> (5.00%) </span><span style="color:#bf616a;">high</span><span> severe
+</span><span>
+</span><span style="color:#bf616a;">Benchmarking</span><span> SoA kinetic energy: Warming up for 3.0000 s
+</span><span style="color:#bf616a;">Warning:</span><span> Unable to complete 100 samples in 5.0s. You may wish to increase target time to 6.6s, enable flat sampling, or reduce sample count to 60.
+</span><span>
+</span><span style="color:#65737e;"># SoA 운동 에너지 계산 벤치마크
+</span><span style="color:#bf616a;">SoA</span><span> kinetic energy      time:   </span><span style="color:#b48ead;">[</span><span>1.3045 ms 1.3221 ms 1.3428 ms</span><span style="color:#b48ead;">]
+</span><span>                        </span><span style="color:#bf616a;">change: </span><span style="color:#b48ead;">[</span><span>−1.5365% −0.4294% +0.7775%</span><span style="color:#b48ead;">]</span><span> (p = 0.46 &gt; </span><span style="color:#d08770;">0</span><span>.05)
+</span><span>                        </span><span style="color:#bf616a;">No</span><span> change in performance detected.
+</span><span style="color:#bf616a;">Found</span><span> 6 outliers among 100 measurements (6.00%)
+</span><span>  </span><span style="color:#bf616a;">4</span><span> (4.00%) </span><span style="color:#bf616a;">high</span><span> mild
+</span><span>  </span><span style="color:#bf616a;">2</span><span> (2.00%) </span><span style="color:#bf616a;">high</span><span> severe
+</span><span>
+</span><span style="color:#65737e;"># AoSoA 운동 에너지 계산 벤치마크
+</span><span style="color:#bf616a;">AoSoA</span><span> kinetic energy    time:   </span><span style="color:#b48ead;">[</span><span>2.3083 ms 2.3286 ms 2.3521 ms</span><span style="color:#b48ead;">]
+</span><span>                        </span><span style="color:#bf616a;">change: </span><span style="color:#b48ead;">[</span><span>−2.5771% −1.3791% −0.1421%</span><span style="color:#b48ead;">]</span><span> (p = 0.02 &lt; </span><span style="color:#d08770;">0</span><span>.05)
+</span><span>                        </span><span style="color:#bf616a;">Change</span><span> within noise threshold.
+</span><span style="color:#bf616a;">Found</span><span> 11 outliers among 100 measurements (11.00%)
+</span><span>  </span><span style="color:#bf616a;">3</span><span> (3.00%) </span><span style="color:#bf616a;">high</span><span> mild
+</span><span>  </span><span style="color:#bf616a;">8</span><span> (8.00%) </span><span style="color:#bf616a;">high</span><span> severe
+</span><span>
+</span><span style="color:#bf616a;">Benchmarking</span><span> AoS sum x coordinates: Warming up for 3.0000 s
+</span><span style="color:#bf616a;">Warning:</span><span> Unable to complete 100 samples in 5.0s. You may wish to increase target time to 9.1s, enable flat sampling, or reduce sample count to 50.
+</span><span>
+</span><span style="color:#65737e;"># AoS x 좌표 합 벤치마크
+</span><span style="color:#bf616a;">AoS</span><span> sum x coordinates   time:   </span><span style="color:#b48ead;">[</span><span>1.8064 ms 1.8162 ms 1.8274 ms</span><span style="color:#b48ead;">]
+</span><span>                        </span><span style="color:#bf616a;">change: </span><span style="color:#b48ead;">[</span><span>−1.9885% −1.1965% −0.3979%</span><span style="color:#b48ead;">]</span><span> (p = 0.00 &lt; </span><span style="color:#d08770;">0</span><span>.05)
+</span><span>                        </span><span style="color:#bf616a;">Change</span><span> within noise threshold.
+</span><span style="color:#bf616a;">Found</span><span> 11 outliers among 100 measurements (11.00%)
+</span><span>  </span><span style="color:#bf616a;">7</span><span> (7.00%) </span><span style="color:#bf616a;">high</span><span> mild
+</span><span>  </span><span style="color:#bf616a;">4</span><span> (4.00%) </span><span style="color:#bf616a;">high</span><span> severe
+</span><span>
+</span><span style="color:#65737e;"># SoA x 좌표 합 벤치마크
+</span><span style="color:#bf616a;">SoA</span><span> sum x coordinates   time:   </span><span style="color:#b48ead;">[</span><span>928.80 µs 937.06 µs 946.70 µs</span><span style="color:#b48ead;">]
+</span><span>                        </span><span style="color:#bf616a;">change: </span><span style="color:#b48ead;">[</span><span>−2.9895% −1.8426% −0.6016%</span><span style="color:#b48ead;">]</span><span> (p = 0.00 &lt; </span><span style="color:#d08770;">0</span><span>.05)
+</span><span>                        </span><span style="color:#bf616a;">Change</span><span> within noise threshold.
+</span><span style="color:#bf616a;">Found</span><span> 5 outliers among 100 measurements (5.00%)
+</span><span>  </span><span style="color:#bf616a;">5</span><span> (5.00%) </span><span style="color:#bf616a;">high</span><span> mild
+</span><span>
+</span><span style="color:#bf616a;">Benchmarking</span><span> AoSoA sum x coordinates: Warming up for 3.0000 s
+</span><span style="color:#bf616a;">Warning:</span><span> Unable to complete 100 samples in 5.0s. You may wish to increase target time to 8.8s, enable flat sampling, or reduce sample count to 50.
+</span><span>
+</span><span style="color:#65737e;"># AoSoA x 좌표 합 벤치마크
+</span><span style="color:#bf616a;">AoSoA</span><span> sum x coordinates time:   </span><span style="color:#b48ead;">[</span><span>1.7468 ms 1.7510 ms 1.7559 ms</span><span style="color:#b48ead;">]
+</span><span>                        </span><span style="color:#bf616a;">change: </span><span style="color:#b48ead;">[</span><span>−1.6810% −0.9152% −0.1729%</span><span style="color:#b48ead;">]</span><span> (p = 0.02 &lt; </span><span style="color:#d08770;">0</span><span>.05)
+</span><span>                        </span><span style="color:#bf616a;">Change</span><span> within noise threshold.
+</span><span style="color:#bf616a;">Found</span><span> 12 outliers among 100 measurements (12.00%)
+</span><span>  </span><span style="color:#bf616a;">5</span><span> (5.00%) </span><span style="color:#bf616a;">high</span><span> mild
+</span><span>  </span><span style="color:#bf616a;">7</span><span> (7.00%) </span><span style="color:#bf616a;">high</span><span> severe
+</span><span>
+</span></code></pre>
+<p>결과를 보면 전반적으로 SoA -&gt; AoSoA -&gt; AoS 순으로 성능이 좋다.
+벤치마크 코드는 <a href="https://github.com/wHoIsDReAmer/blog/tree/main/tests/soa-aos">블로그 깃헙</a>에서 확인할 수 있다.</p>
+<p><strong>참조</strong></p>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/AoS_and_SoA">https://en.wikipedia.org/wiki/AoS_and_SoA</a></li>
+</ul>
+
+  </div>
+  
+
+  <footer class="post-footer">
+      
+      <ul class="post-tags">
+          
+          
+          <li><a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;tags&#x2F;cs&#x2F;">cs</a></li>
+          
+      </ul>
+      
+
+    
+    
+
+
+<nav class="paginav">
+    
+    <a class="prev" href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;posts&#x2F;2025-07-11-dev-container&#x2F;">
+        <span class="title">« Prev</span>
+        <br>
+        <span>devcontainer 도입기</span>
+    </a>
+    
+    
+    <a class="next" href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;posts&#x2F;2025-11-25-how-hd-wallet-works&#x2F;">
+        <span class="title">Next »</span>
+        <br>
+        <span>HD Wallet 동작 알아보기</span>
+    </a>
+    
+</nav>
+
+
+    
+  </footer>
+
+</article>
+
+    </main>
+    
+    <footer class="footer">
+    
+    <span>&copy; 2025 <a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;"></a></span>
+    
+    <span>
+        Powered by
+        <a href="https://www.getzola.org/" rel="noopener noreferrer" target="_blank">Zola</a> &
+        <a href="https://github.com/cydave/zola-theme-papermod" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+
+
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+
+
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+
+
+
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+
+
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerText = 'copy';
+        function copyingDone() {
+            copybutton.innerText = 'copied!';
+            setTimeout(() => {
+                copybutton.innerText = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                var content = codeblock.textContent;
+                if(codeblock.firstChild.tagName == 'TABLE') {
+                    content = Array(...codeblock.firstChild.getElementsByTagName('span')).map((span) => { return span.textContent; }).join('');
+                }
+                navigator.clipboard.writeText(content);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            // td containing LineNos
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            // table containing LineNos and code
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            // code blocks not having highlight as parent class
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+
+
+
+    
+</body>
+</html>

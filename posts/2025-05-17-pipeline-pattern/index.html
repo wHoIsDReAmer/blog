@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+<head>
+    
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>파이프라인 패턴</title>
+
+
+<meta name="keywords" content="programming, hacking, security, coding, developer, develop">
+
+
+
+<meta name="description" content="Go로 파이프라인 패턴을 구현해 단계별 처리 흐름을 느슨 결합으로 구성하는 방법을 소개합니다.">
+
+
+
+
+
+<link rel="canonical" href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;posts&#x2F;2025-05-17-pipeline-pattern&#x2F;">
+
+
+<link rel="stylesheet" href="https://wHoIsDReAmer.github.io/blog/css/includes/scroll-bar.css">
+<link rel="stylesheet" href="https://wHoIsDReAmer.github.io/blog/css/styles.css">
+<link rel="stylesheet" href="https://wHoIsDReAmer.github.io/blog/css/override.css">
+
+
+
+
+
+
+
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+    </style>
+    
+</noscript>
+
+
+
+    
+</head>
+<body class=" dark" id="top">
+    
+    
+<script>
+    if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    }
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;" accesskey="h" title="CWLog (Alt + H)">
+                CWLog
+            </a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+                <ul class="lang-switch">
+                    <li></li>
+                </ul>
+            </div>
+        </div>
+        
+    </nav>
+</header>
+
+    
+    <main class="main">
+        
+<article class="post-single">
+  <header class="post-header">
+      <div class="breadcrumbs">
+          <a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;">Home</a>&nbsp;»&nbsp;
+          <a href="https://wHoIsDReAmer.github.io/blog/posts/">Posts</a>&nbsp;»&nbsp;
+          <a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;posts&#x2F;2025-05-17-pipeline-pattern&#x2F;">파이프라인 패턴</a>
+      </div>
+      <h1 class="post-title">파이프라인 패턴</h1>
+      
+      
+      <div class="post-description">
+          Go로 파이프라인 패턴을 구현해 단계별 처리 흐름을 느슨 결합으로 구성하는 방법을 소개합니다.
+      </div>
+      
+      
+      <div class="post-meta">
+      
+
+
+
+
+
+
+
+
+
+
+<span title="2025-05-16 00:00:00 +0000">2025-05-16</span>&nbsp;·&nbsp;
+
+      
+      </div>
+      
+  </header>
+
+  
+  
+
+<div class="toc">
+    <details  open>
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner">
+            <ul>
+                
+                <li>
+                    <a href="#paipeurain-paeteon" aria-label="파이프라인 패턴">파이프라인 패턴</a>
+                    
+                </li>
+                
+            </ul>
+        </div>
+    </details>
+</div>
+
+
+  
+
+  
+  <div class="post-content">
+      <h2 id="paipeurain-paeteon">파이프라인 패턴<a class="anchor" aria-hidden="true" href="#paipeurain-paeteon" hidden="">#</a>
+</h2>
+<p>파이프라인 패턴은 여러 개의 처리 단계로 이루어진 작업 흐름을 만들 때 사용되는 패턴이다.</p>
+<p>예를 들어 이벤트를 받아 처리하는 흐름을 생각해보자.</p>
+<ol>
+<li>이벤트를 받는다.</li>
+<li>이벤트를 처리한다.</li>
+<li>이벤트를 커스텀 핸들링한다.</li>
+</ol>
+<p>다만, 이벤트를 처리하는 단계에서 여러 개의 처리 단계가 필요할 수 있다. 중간에 API 요청이 있을수도 있고, 데이터베이스 조회가 있을 수도, 어떤 치환이 발생할 수도 있다.</p>
+<p><strong>변화에 유용하지 않은 코드</strong>라면 코드 크기가 커지고, 유지보수성도 떨어지기 마련이다.
+심할 경우 책임이 너무 커질수도 있다.</p>
+<p>이런 유즈케이스일 경우 파이프라인 패턴을 사용하면 유용하고 동적으로 처리가 가능해진다. 각 스테이지마다 결합이 느슨해지기 때문에 유지보수성도 높아진다. 디버깅도 쉬워지고. 데이터 처리 로직이 복잡하면 사실 안 쓸 이유가 없다.</p>
+<p><code>Go</code>로 구현해서 예를 들어보자.</p>
+<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#65737e;">// 파이프라인 정의
+</span><span style="color:#65737e;">// 들어가는 인자가 in, 나오는 인자가 out
+</span><span style="color:#b48ead;">type </span><span>Pipeline[</span><span style="color:#bf616a;">T any</span><span>] </span><span style="color:#b48ead;">func</span><span>(&lt;-</span><span style="color:#b48ead;">chan T</span><span>) &lt;-</span><span style="color:#b48ead;">chan T
+</span><span>
+</span><span style="color:#65737e;">// 이벤트를 받아 넘기는 메인 핸들러
+</span><span style="color:#b48ead;">type </span><span>MainHandler </span><span style="color:#b48ead;">struct </span><span>{
+</span><span> </span><span style="color:#65737e;">// 이벤트를 받는 채널
+</span><span> </span><span style="color:#bf616a;">events </span><span style="color:#b48ead;">chan int
+</span><span> </span><span style="color:#65737e;">// 최종 출력값을 위한 내부 쓰기 채널
+</span><span> </span><span style="color:#bf616a;">internalOut </span><span style="color:#b48ead;">chan int
+</span><span>
+</span><span> </span><span style="color:#65737e;">// 외부에 노출되는 읽기 전용 최종 출력값 채널
+</span><span> </span><span style="color:#bf616a;">out </span><span>&lt;-</span><span style="color:#b48ead;">chan int
+</span><span>
+</span><span> </span><span style="color:#65737e;">// 파이프라인 목록
+</span><span> </span><span style="color:#bf616a;">pipes </span><span>[]</span><span style="color:#b48ead;">Pipeline</span><span>[</span><span style="color:#bf616a;">int</span><span>]
+</span><span>
+</span><span> </span><span style="color:#bf616a;">wg </span><span>*</span><span style="color:#bf616a;">sync</span><span>.</span><span style="color:#b48ead;">WaitGroup
+</span><span>}
+</span><span>
+</span><span style="color:#b48ead;">func </span><span style="color:#8fa1b3;">NewMainHandler</span><span>(</span><span style="color:#bf616a;">wg </span><span>*</span><span style="color:#bf616a;">sync</span><span>.</span><span style="color:#b48ead;">WaitGroup</span><span>) *</span><span style="color:#b48ead;">MainHandler </span><span>{
+</span><span> </span><span style="color:#65737e;">// 기본적으로 양방향 채널로 생성
+</span><span> </span><span style="color:#bf616a;">eventsChan </span><span>:= </span><span style="color:#96b5b4;">make</span><span>(</span><span style="color:#b48ead;">chan int</span><span>)
+</span><span> </span><span style="color:#bf616a;">outChan </span><span>:= </span><span style="color:#96b5b4;">make</span><span>(</span><span style="color:#b48ead;">chan int</span><span>)
+</span><span>
+</span><span> </span><span style="color:#b48ead;">return </span><span>&amp;</span><span style="color:#bf616a;">MainHandler</span><span>{
+</span><span>  </span><span style="color:#bf616a;">events</span><span>:      </span><span style="color:#bf616a;">eventsChan</span><span>,
+</span><span>  </span><span style="color:#bf616a;">internalOut</span><span>: </span><span style="color:#bf616a;">outChan</span><span>,
+</span><span>  </span><span style="color:#bf616a;">out</span><span>:         </span><span style="color:#bf616a;">outChan</span><span>,
+</span><span>  </span><span style="color:#bf616a;">pipes</span><span>:       []</span><span style="color:#b48ead;">Pipeline</span><span>[</span><span style="color:#bf616a;">int</span><span>]{},
+</span><span>  </span><span style="color:#bf616a;">wg</span><span>:          </span><span style="color:#bf616a;">wg</span><span>,
+</span><span> }
+</span><span>}
+</span><span>
+</span><span style="color:#b48ead;">func </span><span>(</span><span style="color:#bf616a;">h </span><span>*</span><span style="color:#b48ead;">MainHandler</span><span>) </span><span style="color:#8fa1b3;">AddPipeline</span><span>(</span><span style="color:#bf616a;">pipe </span><span style="color:#b48ead;">Pipeline</span><span>[</span><span style="color:#bf616a;">int</span><span>]) {
+</span><span> </span><span style="color:#bf616a;">h</span><span>.</span><span style="color:#bf616a;">pipes </span><span>= </span><span style="color:#96b5b4;">append</span><span>(</span><span style="color:#bf616a;">h</span><span>.</span><span style="color:#bf616a;">pipes</span><span>, </span><span style="color:#bf616a;">pipe</span><span>)
+</span><span>}
+</span><span>
+</span><span style="color:#65737e;">// 엔트리포인트
+</span><span style="color:#b48ead;">func </span><span>(</span><span style="color:#bf616a;">h </span><span>*</span><span style="color:#b48ead;">MainHandler</span><span>) </span><span style="color:#8fa1b3;">Start</span><span>() {
+</span><span> </span><span style="color:#bf616a;">h</span><span>.</span><span style="color:#bf616a;">wg</span><span>.</span><span style="color:#bf616a;">Add</span><span>(</span><span style="color:#d08770;">1</span><span>)
+</span><span> </span><span style="color:#b48ead;">go func</span><span>() {
+</span><span>  </span><span style="color:#b48ead;">defer </span><span style="color:#bf616a;">h</span><span>.</span><span style="color:#bf616a;">wg</span><span>.</span><span style="color:#bf616a;">Done</span><span>()
+</span><span>  </span><span style="color:#b48ead;">defer </span><span style="color:#96b5b4;">close</span><span>(</span><span style="color:#bf616a;">h</span><span>.</span><span style="color:#bf616a;">internalOut</span><span>)
+</span><span>
+</span><span>  </span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">in </span><span>&lt;-</span><span style="color:#b48ead;">chan int </span><span>= </span><span style="color:#bf616a;">h</span><span>.</span><span style="color:#bf616a;">events
+</span><span>  </span><span style="color:#b48ead;">for </span><span style="color:#bf616a;">_</span><span>, </span><span style="color:#bf616a;">pipe </span><span>:= </span><span style="color:#b48ead;">range </span><span style="color:#bf616a;">h</span><span>.</span><span style="color:#bf616a;">pipes </span><span>{
+</span><span>   </span><span style="color:#bf616a;">in </span><span>= </span><span style="color:#bf616a;">pipe</span><span>(</span><span style="color:#bf616a;">in</span><span>)
+</span><span>  }
+</span><span>
+</span><span>  </span><span style="color:#65737e;">// 모든 파이프라인을 거치고 나서 최종 출력 채널에 쓰기
+</span><span>  </span><span style="color:#b48ead;">for </span><span style="color:#bf616a;">processed </span><span>:= </span><span style="color:#b48ead;">range </span><span style="color:#bf616a;">in </span><span>{
+</span><span>   </span><span style="color:#bf616a;">h</span><span>.</span><span style="color:#bf616a;">internalOut </span><span>&lt;- </span><span style="color:#bf616a;">processed
+</span><span>  }
+</span><span> }()
+</span><span>}
+</span></code></pre>
+<p>구현체는 아마 이렇게 짜일 것이다.</p>
+<p>이제 위 구현체를 이용해서 결과를 관측해보자</p>
+<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#b48ead;">func </span><span style="color:#8fa1b3;">main</span><span>() {
+</span><span> </span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">wg sync</span><span>.</span><span style="color:#b48ead;">WaitGroup
+</span><span>
+</span><span> </span><span style="color:#65737e;">// 메인 핸들러 생성
+</span><span> </span><span style="color:#bf616a;">mainHandler </span><span>:= </span><span style="color:#bf616a;">NewMainHandler</span><span>(&amp;</span><span style="color:#bf616a;">wg</span><span>)
+</span><span>
+</span><span> </span><span style="color:#65737e;">// 덧셈 파이프라인 추가
+</span><span> </span><span style="color:#bf616a;">mainHandler</span><span>.</span><span style="color:#bf616a;">AddPipeline</span><span>(</span><span style="color:#b48ead;">func</span><span>(</span><span style="color:#bf616a;">in </span><span>&lt;-</span><span style="color:#b48ead;">chan int</span><span>) &lt;-</span><span style="color:#b48ead;">chan int </span><span>{
+</span><span>  </span><span style="color:#bf616a;">out </span><span>:= </span><span style="color:#96b5b4;">make</span><span>(</span><span style="color:#b48ead;">chan int</span><span>)
+</span><span>  </span><span style="color:#b48ead;">go func</span><span>() {
+</span><span>   </span><span style="color:#b48ead;">defer </span><span style="color:#96b5b4;">close</span><span>(</span><span style="color:#bf616a;">out</span><span>)
+</span><span>   </span><span style="color:#b48ead;">for </span><span style="color:#bf616a;">event </span><span>:= </span><span style="color:#b48ead;">range </span><span style="color:#bf616a;">in </span><span>{
+</span><span>    </span><span style="color:#bf616a;">out </span><span>&lt;- </span><span style="color:#bf616a;">event </span><span>+ </span><span style="color:#d08770;">1
+</span><span>   }
+</span><span>  }()
+</span><span>  </span><span style="color:#b48ead;">return </span><span style="color:#bf616a;">out
+</span><span> })
+</span><span>
+</span><span> </span><span style="color:#65737e;">// 곱셈 파이프라인 추가
+</span><span> </span><span style="color:#bf616a;">mainHandler</span><span>.</span><span style="color:#bf616a;">AddPipeline</span><span>(</span><span style="color:#b48ead;">func</span><span>(</span><span style="color:#bf616a;">in </span><span>&lt;-</span><span style="color:#b48ead;">chan int</span><span>) &lt;-</span><span style="color:#b48ead;">chan int </span><span>{
+</span><span>  </span><span style="color:#bf616a;">out </span><span>:= </span><span style="color:#96b5b4;">make</span><span>(</span><span style="color:#b48ead;">chan int</span><span>)
+</span><span>  </span><span style="color:#b48ead;">go func</span><span>() {
+</span><span>   </span><span style="color:#b48ead;">defer </span><span style="color:#96b5b4;">close</span><span>(</span><span style="color:#bf616a;">out</span><span>)
+</span><span>   </span><span style="color:#b48ead;">for </span><span style="color:#bf616a;">event </span><span>:= </span><span style="color:#b48ead;">range </span><span style="color:#bf616a;">in </span><span>{
+</span><span>    </span><span style="color:#bf616a;">out </span><span>&lt;- </span><span style="color:#bf616a;">event </span><span>* </span><span style="color:#d08770;">2
+</span><span>   }
+</span><span>  }()
+</span><span>  </span><span style="color:#b48ead;">return </span><span style="color:#bf616a;">out
+</span><span> })
+</span><span>
+</span><span> </span><span style="color:#65737e;">// 메인 핸들러 시작
+</span><span> </span><span style="color:#bf616a;">mainHandler</span><span>.</span><span style="color:#bf616a;">Start</span><span>()
+</span><span>
+</span><span> </span><span style="color:#b48ead;">go func</span><span>() {
+</span><span>  </span><span style="color:#b48ead;">for </span><span style="color:#bf616a;">out </span><span>:= </span><span style="color:#b48ead;">range </span><span style="color:#bf616a;">mainHandler</span><span>.</span><span style="color:#bf616a;">out </span><span>{
+</span><span>   </span><span style="color:#bf616a;">fmt</span><span>.</span><span style="color:#bf616a;">Println</span><span>(</span><span style="color:#bf616a;">out</span><span>)
+</span><span>  }
+</span><span> }()
+</span><span>
+</span><span> </span><span style="color:#65737e;">// 이벤트 전송
+</span><span> </span><span style="color:#65737e;">// (1+1)*2 = 4
+</span><span> </span><span style="color:#65737e;">// (2+1)*2 = 6
+</span><span> </span><span style="color:#65737e;">// (3+1)*2 = 8
+</span><span> </span><span style="color:#bf616a;">mainHandler</span><span>.</span><span style="color:#bf616a;">events </span><span>&lt;- </span><span style="color:#d08770;">1
+</span><span> </span><span style="color:#bf616a;">mainHandler</span><span>.</span><span style="color:#bf616a;">events </span><span>&lt;- </span><span style="color:#d08770;">2
+</span><span> </span><span style="color:#bf616a;">mainHandler</span><span>.</span><span style="color:#bf616a;">events </span><span>&lt;- </span><span style="color:#d08770;">3
+</span><span>
+</span><span> </span><span style="color:#96b5b4;">close</span><span>(</span><span style="color:#bf616a;">mainHandler</span><span>.</span><span style="color:#bf616a;">events</span><span>)
+</span><span>
+</span><span> </span><span style="color:#65737e;">// 모든 고루틴이 종료될 때까지 대기
+</span><span> </span><span style="color:#bf616a;">wg</span><span>.</span><span style="color:#bf616a;">Wait</span><span>()
+</span><span>}
+</span></code></pre>
+<p>이렇게 파이프라인 패턴을 구현할 수 있다. 현재 예제는 단순한 연산만 수행하지만, 실제 프로덕션 환경에서는 각 스테이지가 복잡한 비즈니스 로직을 처리할 수 있다. 이럴 때 파이프라인 패턴의 장점이 드러날 것이다. 각 스테이지가 독립적으로 동작하기 때문에 디버깅이 용이하고, 성능 최적화도 단계별로 진행할 수 있기 때문이다.</p>
+
+  </div>
+  
+
+  <footer class="post-footer">
+      
+      <ul class="post-tags">
+          
+          
+          <li><a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;tags&#x2F;go&#x2F;">go</a></li>
+          
+          
+          <li><a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;tags&#x2F;pipeline&#x2F;">pipeline</a></li>
+          
+      </ul>
+      
+
+    
+    
+
+
+<nav class="paginav">
+    
+    <a class="prev" href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;posts&#x2F;2025-05-09-what-is-the-coroutine&#x2F;">
+        <span class="title">« Prev</span>
+        <br>
+        <span>코루틴이란?</span>
+    </a>
+    
+    
+    <a class="next" href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;posts&#x2F;2025-05-26-actor-model&#x2F;">
+        <span class="title">Next »</span>
+        <br>
+        <span>액터 모델</span>
+    </a>
+    
+</nav>
+
+
+    
+  </footer>
+
+</article>
+
+    </main>
+    
+    <footer class="footer">
+    
+    <span>&copy; 2025 <a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;"></a></span>
+    
+    <span>
+        Powered by
+        <a href="https://www.getzola.org/" rel="noopener noreferrer" target="_blank">Zola</a> &
+        <a href="https://github.com/cydave/zola-theme-papermod" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+
+
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+
+
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+
+
+
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+
+
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerText = 'copy';
+        function copyingDone() {
+            copybutton.innerText = 'copied!';
+            setTimeout(() => {
+                copybutton.innerText = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                var content = codeblock.textContent;
+                if(codeblock.firstChild.tagName == 'TABLE') {
+                    content = Array(...codeblock.firstChild.getElementsByTagName('span')).map((span) => { return span.textContent; }).join('');
+                }
+                navigator.clipboard.writeText(content);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            // td containing LineNos
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            // table containing LineNos and code
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            // code blocks not having highlight as parent class
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+
+
+
+    
+</body>
+</html>

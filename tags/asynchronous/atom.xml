@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>CWLog - asynchronous</title>
+    <subtitle>개발 &amp; 해킹 좋아하는 사람의 블로그</subtitle>
+    <link rel="self" type="application/atom+xml" href="https://wHoIsDReAmer.github.io/blog/tags/asynchronous/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://wHoIsDReAmer.github.io/blog/"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2025-05-26T00:00:00+00:00</updated>
+    <id>https://wHoIsDReAmer.github.io/blog/tags/asynchronous/atom.xml</id>
+    <entry xml:lang="en">
+        <title>액터 모델</title>
+        <published>2025-05-26T00:00:00+00:00</published>
+        <updated>2025-05-26T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://wHoIsDReAmer.github.io/blog/posts/2025-05-26-actor-model/"/>
+        <id>https://wHoIsDReAmer.github.io/blog/posts/2025-05-26-actor-model/</id>
+        
+        <content type="html" xml:base="https://wHoIsDReAmer.github.io/blog/posts/2025-05-26-actor-model/">&lt;h2 id=&quot;aegteo-model&quot;&gt;액터 모델&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#aegteo-model&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;p&gt;1973년 Carl Hewitt가 처음 제안한 모델로, 분산 시스템과 동시성 프로그래밍의 복잡성을 해결하기 위해 고안되었다.&lt;&#x2F;p&gt;
+&lt;p&gt;액터 모델은 프로세스 간 통신을 추상화하여 동시성 프로그래밍을 단순화하는 모델이다.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;모든 것은 actor다&lt;&#x2F;code&gt; 라는 철학을 바탕으로 나왔으며, &lt;code&gt;actor&lt;&#x2F;code&gt;마다 내부적으로 메시지를 주고받는 방식으로 동작한다. 메시지를 주고받는 방식으로 동작하기 때문에 메시지 큐를 사용하는 방식과 유사하다.&lt;&#x2F;p&gt;
+&lt;p&gt;하나씩 톺아보자.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;haegsim-weonri&quot;&gt;핵심 원리&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#haegsim-weonri&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;액터 모델의 기본 아이디어는 다음과 같다:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;액터(Actor)&lt;&#x2F;strong&gt;: 계산의 기본 단위로, 각자 독립된 상태와 행동을 가진다&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;메시지 전달&lt;&#x2F;strong&gt;: 액터 간의 유일한 통신 수단으로, 비동기적으로 이루어진다&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;불변성&lt;&#x2F;strong&gt;: 메시지는 불변이며, 액터의 상태는 외부에서 직접 접근할 수 없다&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;teugjing&quot;&gt;특징&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#teugjing&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;상태 캡슐화&lt;&#x2F;strong&gt;: 각 actor는 자신의 상태를 캡슐화하고 있으며, 외부에서 직접 접근할 수 없다.&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;메시지 기반 통신&lt;&#x2F;strong&gt;: actor는 메시지를 통해서만 서로 통신한다.&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;위치 투명성&lt;&#x2F;strong&gt;: actor는 로컬 또는 원격 위치를 구분하지 않고 메시지를 주고받는다.&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;비동기 처리&lt;&#x2F;strong&gt;: 메시지 전송은 논블로킹이며, 응답을 기다리지 않는다.&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;독립적 실행&lt;&#x2F;strong&gt;: 각 actor는 독립적으로 실행되며, 다른 actor의 실행에 영향을 받지 않는다.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;aegteoyi-haengdong&quot;&gt;액터의 행동&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#aegteoyi-haengdong&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;액터가 메시지를 받았을 때 할 수 있는 일은 다음 세 가지뿐이다:&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;새로운 액터 생성&lt;&#x2F;strong&gt;: 다른 액터를 생성할 수 있다&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;메시지 전송&lt;&#x2F;strong&gt;: 다른 액터에게 메시지를 보낼 수 있다&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;상태 변경&lt;&#x2F;strong&gt;: 다음 메시지를 위해 자신의 상태를 변경할 수 있다&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h3 id=&quot;jangjeom&quot;&gt;장점&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#jangjeom&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;데드락 방지&lt;&#x2F;strong&gt;: 공유 상태가 없어 데드락이 발생하지 않는다&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;확장성&lt;&#x2F;strong&gt;: 액터 수를 쉽게 늘려 시스템을 확장할 수 있다&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;오류 격리&lt;&#x2F;strong&gt;: 한 액터의 실패가 다른 액터에 영향을 주지 않는다&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;분산 처리&lt;&#x2F;strong&gt;: 네트워크를 통해 분산된 액터들이 투명하게 통신할 수 있다&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;테스트 용이성&lt;&#x2F;strong&gt;: 각 액터를 독립적으로 테스트할 수 있다&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;danjeom&quot;&gt;단점&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#danjeom&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;디버깅 어려움&lt;&#x2F;strong&gt;: 비동기 메시지 전달로 인해 콜스택 추적이 어렵다&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;메시지 순서&lt;&#x2F;strong&gt;: 메시지 전달 순서가 보장되지 않을 수 있다&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;메모리 오버헤드&lt;&#x2F;strong&gt;: 각 액터마다 메일박스를 유지해야 한다&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;silje-sayong-sarye&quot;&gt;실제 사용 사례&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#silje-sayong-sarye&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Erlang&#x2F;OTP&lt;&#x2F;strong&gt;: 통신 시스템에서 수백만 개의 액터를 동시에 실행&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;Akka&lt;&#x2F;strong&gt;: 대용량 트래픽을 처리하는 웹 서비스 (LinkedIn, Twitter 등)&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;Orleans&lt;&#x2F;strong&gt;: Microsoft의 분산 게임 서버 플랫폼&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;CAF&lt;&#x2F;strong&gt;: C++ 액터 프레임워크로 고성능 시스템 구축&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;hr &#x2F;&gt;
+&lt;p&gt;사실 설명만 들으면 직접적으로 와닿지 않는다. 결국 최상위 추상화 레벨에서의 설명이기 때문이다. 실제로 구현해보면 그렇게 어렵지는 않다.&lt;&#x2F;p&gt;
+&lt;p&gt;또한, 뮤텍스를 안쓴다고는 하는데, 내부 구현에서는 뮤텍스를 사용한다 ㅋㅋ&lt;&#x2F;p&gt;
+&lt;p&gt;단순히 락의 책임이 개발자에서 액터 모델로 넘어간 거 뿐이다.&lt;&#x2F;p&gt;
+&lt;p&gt;그리고 구현할 때 애플리케이션 레이어에서 구현할텐데, 실제로는 이런식으로 쓰이는 디자인보다는 실제 노드 자체를 액터로 취급하고 노드 간 통신을 액터로 취급하는 경우가 더 많다. 그러니까, 분산 시스템에서 더 많이 채택되는 디자인이다.&lt;&#x2F;p&gt;
+&lt;p&gt;우선 구현해보기 전 사진부터 보자.
+&lt;img src=&quot;https:&#x2F;&#x2F;labviewwiki.org&#x2F;w&#x2F;images&#x2F;f&#x2F;f7&#x2F;Actor_Framework_Communication.png&quot; alt=&quot;actor_model&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;rustro-guhyeonhan-aegteo-model&quot;&gt;Rust로 구현한 액터 모델&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#rustro-guhyeonhan-aegteo-model&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;use &lt;&#x2F;span&gt;&lt;span&gt;std::sync::mpsc::{&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;, Receiver, Sender};
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;use &lt;&#x2F;span&gt;&lt;span&gt;std::thread;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;#[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;derive&lt;&#x2F;span&gt;&lt;span&gt;(Debug)]
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;enum &lt;&#x2F;span&gt;&lt;span&gt;CalculatorMessage {
+&lt;&#x2F;span&gt;&lt;span&gt;    Add { a: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f64&lt;&#x2F;span&gt;&lt;span&gt;, b: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f64&lt;&#x2F;span&gt;&lt;span&gt;, reply: Sender&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f64&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; },
+&lt;&#x2F;span&gt;&lt;span&gt;    Multiply { a: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f64&lt;&#x2F;span&gt;&lt;span&gt;, b: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f64&lt;&#x2F;span&gt;&lt;span&gt;, reply: Sender&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f64&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; },
+&lt;&#x2F;span&gt;&lt;span&gt;    Divide { a: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f64&lt;&#x2F;span&gt;&lt;span&gt;, b: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f64&lt;&#x2F;span&gt;&lt;span&gt;, reply: Sender&amp;lt;Result&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f64&lt;&#x2F;span&gt;&lt;span&gt;, String&amp;gt;&amp;gt; },
+&lt;&#x2F;span&gt;&lt;span&gt;    GetHistory { reply: Sender&amp;lt;Vec&amp;lt;String&amp;gt;&amp;gt; },
+&lt;&#x2F;span&gt;&lt;span&gt;    Clear,
+&lt;&#x2F;span&gt;&lt;span&gt;    Stop,
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;CalculatorActor {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;receiver&lt;&#x2F;span&gt;&lt;span&gt;: Receiver&amp;lt;CalculatorMessage&amp;gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;history&lt;&#x2F;span&gt;&lt;span&gt;: Vec&amp;lt;String&amp;gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;impl &lt;&#x2F;span&gt;&lt;span&gt;CalculatorActor {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;new&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;receiver&lt;&#x2F;span&gt;&lt;span&gt;: Receiver&amp;lt;CalculatorMessage&amp;gt;) -&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;Self &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;        CalculatorActor {
+&lt;&#x2F;span&gt;&lt;span&gt;            receiver,
+&lt;&#x2F;span&gt;&lt;span&gt;            history: Vec::new(),
+&lt;&#x2F;span&gt;&lt;span&gt;        }
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;run&lt;&#x2F;span&gt;&lt;span&gt;(&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;mut &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;while let &lt;&#x2F;span&gt;&lt;span&gt;Ok(message) = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;.receiver.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;recv&lt;&#x2F;span&gt;&lt;span&gt;() {
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;match&lt;&#x2F;span&gt;&lt;span&gt; message {
+&lt;&#x2F;span&gt;&lt;span&gt;                CalculatorMessage::Add { a, b, reply } =&amp;gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;                    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; result = a + b;
+&lt;&#x2F;span&gt;&lt;span&gt;                    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;.history.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;push&lt;&#x2F;span&gt;&lt;span&gt;(format!(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;{}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt; + &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;{}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt; = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;{}&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, a, b, result));
+&lt;&#x2F;span&gt;&lt;span&gt;                    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let &lt;&#x2F;span&gt;&lt;span&gt;_ = reply.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;send&lt;&#x2F;span&gt;&lt;span&gt;(result);
+&lt;&#x2F;span&gt;&lt;span&gt;                }
+&lt;&#x2F;span&gt;&lt;span&gt;                CalculatorMessage::Multiply { a, b, reply } =&amp;gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;                    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; result = a * b;
+&lt;&#x2F;span&gt;&lt;span&gt;                    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;.history.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;push&lt;&#x2F;span&gt;&lt;span&gt;(format!(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;{}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt; * &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;{}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt; = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;{}&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, a, b, result));
+&lt;&#x2F;span&gt;&lt;span&gt;                    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let &lt;&#x2F;span&gt;&lt;span&gt;_ = reply.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;send&lt;&#x2F;span&gt;&lt;span&gt;(result);
+&lt;&#x2F;span&gt;&lt;span&gt;                }
+&lt;&#x2F;span&gt;&lt;span&gt;                CalculatorMessage::Divide { a, b, reply } =&amp;gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;                    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt; b == &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0.0 &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let &lt;&#x2F;span&gt;&lt;span&gt;_ = reply.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;send&lt;&#x2F;span&gt;&lt;span&gt;(Err(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Division by zero&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;to_string&lt;&#x2F;span&gt;&lt;span&gt;()));
+&lt;&#x2F;span&gt;&lt;span&gt;                    } &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;else &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; result = a &#x2F; b;
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;.history.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;push&lt;&#x2F;span&gt;&lt;span&gt;(format!(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;{}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt; &#x2F; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;{}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt; = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;{}&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, a, b, result));
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let &lt;&#x2F;span&gt;&lt;span&gt;_ = reply.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;send&lt;&#x2F;span&gt;&lt;span&gt;(Ok(result));
+&lt;&#x2F;span&gt;&lt;span&gt;                    }
+&lt;&#x2F;span&gt;&lt;span&gt;                }
+&lt;&#x2F;span&gt;&lt;span&gt;                CalculatorMessage::GetHistory { reply } =&amp;gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;                    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let &lt;&#x2F;span&gt;&lt;span&gt;_ = reply.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;send&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;.history.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;clone&lt;&#x2F;span&gt;&lt;span&gt;());
+&lt;&#x2F;span&gt;&lt;span&gt;                }
+&lt;&#x2F;span&gt;&lt;span&gt;                CalculatorMessage::Clear =&amp;gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;                    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;.history.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;clear&lt;&#x2F;span&gt;&lt;span&gt;();
+&lt;&#x2F;span&gt;&lt;span&gt;                    println!(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;History cleared&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;);
+&lt;&#x2F;span&gt;&lt;span&gt;                }
+&lt;&#x2F;span&gt;&lt;span&gt;                CalculatorMessage::Stop =&amp;gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;                    println!(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Calculator stopping...&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;);
+&lt;&#x2F;span&gt;&lt;span&gt;                    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;break&lt;&#x2F;span&gt;&lt;span&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;                }
+&lt;&#x2F;span&gt;&lt;span&gt;            }
+&lt;&#x2F;span&gt;&lt;span&gt;        }
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;#[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;derive&lt;&#x2F;span&gt;&lt;span&gt;(Clone)]
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;CalculatorHandle {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;sender&lt;&#x2F;span&gt;&lt;span&gt;: Sender&amp;lt;CalculatorMessage&amp;gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;impl &lt;&#x2F;span&gt;&lt;span&gt;CalculatorHandle {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;new&lt;&#x2F;span&gt;&lt;span&gt;() -&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;Self &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let &lt;&#x2F;span&gt;&lt;span&gt;(sender, receiver) = mpsc::channel();
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let mut&lt;&#x2F;span&gt;&lt;span&gt; actor = CalculatorActor::new(receiver);
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;        thread::spawn(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;move &lt;&#x2F;span&gt;&lt;span&gt;|| {
+&lt;&#x2F;span&gt;&lt;span&gt;            actor.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;run&lt;&#x2F;span&gt;&lt;span&gt;();
+&lt;&#x2F;span&gt;&lt;span&gt;        });
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;        CalculatorHandle { sender }
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;add&lt;&#x2F;span&gt;&lt;span&gt;(&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;a&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f64&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;b&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f64&lt;&#x2F;span&gt;&lt;span&gt;) -&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f64 &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let &lt;&#x2F;span&gt;&lt;span&gt;(reply_sender, reply_receiver) = mpsc::channel();
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let &lt;&#x2F;span&gt;&lt;span&gt;_ = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;.sender.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;send&lt;&#x2F;span&gt;&lt;span&gt;(CalculatorMessage::Add { a, b, reply: reply_sender });
+&lt;&#x2F;span&gt;&lt;span&gt;        reply_receiver.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;recv&lt;&#x2F;span&gt;&lt;span&gt;().&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;unwrap_or&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0.0&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;multiply&lt;&#x2F;span&gt;&lt;span&gt;(&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;a&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f64&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;b&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f64&lt;&#x2F;span&gt;&lt;span&gt;) -&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f64 &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let &lt;&#x2F;span&gt;&lt;span&gt;(reply_sender, reply_receiver) = mpsc::channel();
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let &lt;&#x2F;span&gt;&lt;span&gt;_ = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;.sender.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;send&lt;&#x2F;span&gt;&lt;span&gt;(CalculatorMessage::Multiply { a, b, reply: reply_sender });
+&lt;&#x2F;span&gt;&lt;span&gt;        reply_receiver.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;recv&lt;&#x2F;span&gt;&lt;span&gt;().&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;unwrap_or&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0.0&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;divide&lt;&#x2F;span&gt;&lt;span&gt;(&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;a&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f64&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;b&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f64&lt;&#x2F;span&gt;&lt;span&gt;) -&amp;gt; Result&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f64&lt;&#x2F;span&gt;&lt;span&gt;, String&amp;gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let &lt;&#x2F;span&gt;&lt;span&gt;(reply_sender, reply_receiver) = mpsc::channel();
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let &lt;&#x2F;span&gt;&lt;span&gt;_ = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;.sender.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;send&lt;&#x2F;span&gt;&lt;span&gt;(CalculatorMessage::Divide { a, b, reply: reply_sender });
+&lt;&#x2F;span&gt;&lt;span&gt;        reply_receiver.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;recv&lt;&#x2F;span&gt;&lt;span&gt;().&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;unwrap_or&lt;&#x2F;span&gt;&lt;span&gt;(Err(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Communication error&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;to_string&lt;&#x2F;span&gt;&lt;span&gt;()))
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;get_history&lt;&#x2F;span&gt;&lt;span&gt;(&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;) -&amp;gt; Vec&amp;lt;String&amp;gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let &lt;&#x2F;span&gt;&lt;span&gt;(reply_sender, reply_receiver) = mpsc::channel();
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let &lt;&#x2F;span&gt;&lt;span&gt;_ = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;.sender.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;send&lt;&#x2F;span&gt;&lt;span&gt;(CalculatorMessage::GetHistory { reply: reply_sender });
+&lt;&#x2F;span&gt;&lt;span&gt;        reply_receiver.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;recv&lt;&#x2F;span&gt;&lt;span&gt;().&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;unwrap_or_default&lt;&#x2F;span&gt;&lt;span&gt;()
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;clear&lt;&#x2F;span&gt;&lt;span&gt;(&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let &lt;&#x2F;span&gt;&lt;span&gt;_ = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;.sender.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;send&lt;&#x2F;span&gt;&lt;span&gt;(CalculatorMessage::Clear);
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;stop&lt;&#x2F;span&gt;&lt;span&gt;(&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let &lt;&#x2F;span&gt;&lt;span&gt;_ = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;.sender.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;send&lt;&#x2F;span&gt;&lt;span&gt;(CalculatorMessage::Stop);
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;분산 시스템이나 실시간 시스템, 높은 동시성이 필요한 시스템에서 좋게 써먹을 수 있다. 성능적으로도 그렇고 디자인적으로도 우수하다.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;camjo&quot;&gt;참조&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#camjo&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Actor_model&quot;&gt;Actor Model&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</content>
+        
+    </entry>
+</feed>

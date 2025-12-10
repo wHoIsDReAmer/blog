@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>CWLog - crypto</title>
+    <subtitle>개발 &amp; 해킹 좋아하는 사람의 블로그</subtitle>
+    <link rel="self" type="application/atom+xml" href="https://wHoIsDReAmer.github.io/blog/tags/crypto/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://wHoIsDReAmer.github.io/blog/"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2025-11-25T00:00:00+00:00</updated>
+    <id>https://wHoIsDReAmer.github.io/blog/tags/crypto/atom.xml</id>
+    <entry xml:lang="en">
+        <title>HD Wallet 동작 알아보기</title>
+        <published>2025-11-25T00:00:00+00:00</published>
+        <updated>2025-11-25T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://wHoIsDReAmer.github.io/blog/posts/2025-11-25-how-hd-wallet-works/"/>
+        <id>https://wHoIsDReAmer.github.io/blog/posts/2025-11-25-how-hd-wallet-works/</id>
+        
+        <content type="html" xml:base="https://wHoIsDReAmer.github.io/blog/posts/2025-11-25-how-hd-wallet-works/">&lt;p&gt;&lt;img src=&quot;..&#x2F;..&#x2F;images&#x2F;cold-wallet.png&quot; alt=&quot;cold-wallet&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;흔히 Hot Wallet, HD Wallet라고 하면 대표적인 소프트웨어들이 많다. &lt;code&gt;Exodus&lt;&#x2F;code&gt;부터 시작해서 &lt;code&gt;MetaMask&lt;&#x2F;code&gt;까지.&lt;&#x2F;p&gt;
+&lt;p&gt;이 소프트웨어들 전부 갖고있는 특징이 있는데 &#x27;비밀 문구&#x27;만 알고있다면 오프체인에서 지갑을 복구할 수 있다.&lt;&#x2F;p&gt;
+&lt;p&gt;Magic 같아 보이는 구조를 톺아보도록 하자.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;hd-wallet&quot;&gt;HD Wallet&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#hd-wallet&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;p&gt;HD Wallet은 &lt;code&gt;Hierarchical Deterministic Wallet&lt;&#x2F;code&gt;의 약자다. 계층형 결정론적 지갑이란 뜻인데, 사전적 의미만 봐선 역할 파악이 쉽지가 않다.&lt;&#x2F;p&gt;
+&lt;p&gt;아래가 HD Wallet의 전체 흐름 구조이다.&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;color:#c0c5ce;&quot;&gt;&lt;code&gt;&lt;span&gt;Master Seed (니모닉 → 512bit Seed)
+&lt;&#x2F;span&gt;&lt;span&gt;    │
+&lt;&#x2F;span&gt;&lt;span&gt;    └── Master Key (m)
+&lt;&#x2F;span&gt;&lt;span&gt;            │
+&lt;&#x2F;span&gt;&lt;span&gt;            ├── Purpose (m&#x2F;44&amp;#39;)        ← BIP-44 표준
+&lt;&#x2F;span&gt;&lt;span&gt;            │       │
+&lt;&#x2F;span&gt;&lt;span&gt;            │       ├── Coin Type (m&#x2F;44&amp;#39;&#x2F;0&amp;#39;)    ← Bitcoin
+&lt;&#x2F;span&gt;&lt;span&gt;            │       │       │
+&lt;&#x2F;span&gt;&lt;span&gt;            │       │       └── Account (m&#x2F;44&amp;#39;&#x2F;0&amp;#39;&#x2F;0&amp;#39;)
+&lt;&#x2F;span&gt;&lt;span&gt;            │       │               │
+&lt;&#x2F;span&gt;&lt;span&gt;            │       │               ├── External (m&#x2F;44&amp;#39;&#x2F;0&amp;#39;&#x2F;0&amp;#39;&#x2F;0)  ← 수신 주소
+&lt;&#x2F;span&gt;&lt;span&gt;            │       │               │       ├── Address 0
+&lt;&#x2F;span&gt;&lt;span&gt;            │       │               │       ├── Address 1
+&lt;&#x2F;span&gt;&lt;span&gt;            │       │               │       └── ...
+&lt;&#x2F;span&gt;&lt;span&gt;            │       │               │
+&lt;&#x2F;span&gt;&lt;span&gt;            │       │               └── Internal (m&#x2F;44&amp;#39;&#x2F;0&amp;#39;&#x2F;0&amp;#39;&#x2F;1)  ← 잔돈 주소
+&lt;&#x2F;span&gt;&lt;span&gt;            │       │
+&lt;&#x2F;span&gt;&lt;span&gt;            │       ├── Coin Type (m&#x2F;44&amp;#39;&#x2F;60&amp;#39;)   ← Ethereum
+&lt;&#x2F;span&gt;&lt;span&gt;            │       │       └── ...
+&lt;&#x2F;span&gt;&lt;span&gt;            │       │
+&lt;&#x2F;span&gt;&lt;span&gt;            │       └── Coin Type (m&#x2F;44&amp;#39;&#x2F;501&amp;#39;)  ← Solana
+&lt;&#x2F;span&gt;&lt;span&gt;            │               └── ...
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&#x27;비밀 문구&#x27;. 즉, 니모닉에서 &lt;code&gt;Seed&lt;&#x2F;code&gt;로 변환하고, 거기서 파생된 &lt;code&gt;Master Key&lt;&#x2F;code&gt;를 사용하여 계층적으로 파생된 키를 사용한다.&lt;&#x2F;p&gt;
+&lt;p&gt;이런 수학적 알고리즘을 통해 한 시드에서 여러 키를 관리할 수 있는 것이다. 반대로 말하면 시드가 털리면 모든 지갑이 다 털릴 것이다.&lt;&#x2F;p&gt;
+&lt;p&gt;세부적으로 톺기 전 &lt;strong&gt;BIP&lt;&#x2F;strong&gt;에 대해서 간략하게 소개하자면 &lt;strong&gt;비트코인 개선 제안&lt;&#x2F;strong&gt;(&lt;strong&gt;B&lt;&#x2F;strong&gt;itcoin &lt;strong&gt;I&lt;&#x2F;strong&gt;mprovement &lt;strong&gt;P&lt;&#x2F;strong&gt;roposal) 의 약자이다.&lt;&#x2F;p&gt;
+&lt;p&gt;대강 탈중앙화 기술 논의 결정을 위한 제안서 정도로 생각하면 될 것 같다. 실제로 거기서 채택된 것들이 &lt;strong&gt;BIP-32&lt;&#x2F;strong&gt;와 &lt;strong&gt;BIP-44&lt;&#x2F;strong&gt;이다.&lt;&#x2F;p&gt;
+&lt;p&gt;표준을 지키지 않아도 지갑 주소 찍어내서 체인에서 쓰는 건 문제없다. 근데.. 예를 들자면 메타마스크에서 콜드월렛으로 지갑 백업을 못한다.&lt;&#x2F;p&gt;
+&lt;p&gt;즉 각 지갑별로 호환성을 지키려고 존재한다 생각하면 된다.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;bip-32&quot;&gt;BIP-32&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#bip-32&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;계층적 파생을 위한 표준으로 알고리즘으로, 마스터 키를 만들 때 사용된다.&lt;&#x2F;p&gt;
+&lt;p&gt;512비트 시드를 받아서 반으로 쪼개서 (256비트 씩) 왼쪽은 마스터 개인키, 오른쪽은 마스터 체인 코드로 쓴다.&lt;&#x2F;p&gt;
+&lt;p&gt;왜 이렇게 하나 싶겠지만, 마스터 체인 코드가 엔트로피 역할을 해서 자식 키를 만들 때 무작위성을 부여해준다. (실질적으로는 관련이 있긴 하지만)&lt;&#x2F;p&gt;
+&lt;p&gt;키 찍어내는 핵심 알고리즘이다.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;bip-44&quot;&gt;BIP-44&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#bip-44&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;크립토별 계층 구조를 정형화 시켜주는 표준 규약이다. 이건 알고리즘은 아니고 규약인데,&lt;&#x2F;p&gt;
+&lt;p&gt;아까 트리 구조에서 &lt;code&gt;m&#x2F;44&#x27;&#x2F;..&lt;&#x2F;code&gt; 하던게 이거다. 규약 안 지키고 멋대로 &lt;code&gt;Path&lt;&#x2F;code&gt; 만들면 아까 말했던 것처럼 해당 지갑 서비스가 망해버린다면, 자산 복구가 매우 힘들어진다. 암호화폐 생태계의 철학인 탈중앙화, 자기 주권이 훼손된다.&lt;&#x2F;p&gt;
+&lt;p&gt;경로 구조는 이렇게 생겼다.&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;color:#c0c5ce;&quot;&gt;&lt;code&gt;&lt;span&gt;m &#x2F; purpose&amp;#39; &#x2F; coin_type&amp;#39; &#x2F; account&amp;#39; &#x2F; change &#x2F; address_index
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;레벨&lt;&#x2F;th&gt;&lt;th&gt;설명&lt;&#x2F;th&gt;&lt;th&gt;예시&lt;&#x2F;th&gt;&lt;&#x2F;tr&gt;&lt;&#x2F;thead&gt;&lt;tbody&gt;
+&lt;tr&gt;&lt;td&gt;&lt;code&gt;purpose&#x27;&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;td&gt;BIP 번호&lt;&#x2F;td&gt;&lt;td&gt;44&#x27;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;code&gt;coin_type&#x27;&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;td&gt;코인 종류&lt;&#x2F;td&gt;&lt;td&gt;0&#x27;=BTC, 60&#x27;=ETH&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;code&gt;account&#x27;&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;td&gt;계정 번호&lt;&#x2F;td&gt;&lt;td&gt;0&#x27;, 1&#x27;, 2&#x27;...&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;code&gt;change&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;td&gt;외부&#x2F;내부&lt;&#x2F;td&gt;&lt;td&gt;0=수신, 1=잔돈&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;code&gt;address_index&lt;&#x2F;code&gt;&lt;&#x2F;td&gt;&lt;td&gt;주소 인덱스&lt;&#x2F;td&gt;&lt;td&gt;0, 1, 2...&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;&#x2F;tbody&gt;&lt;&#x2F;table&gt;
+&lt;p&gt;참고로 &lt;code&gt;&#x27;&lt;&#x2F;code&gt; (프라임)은 &lt;strong&gt;Hardened Derivation&lt;&#x2F;strong&gt;을 의미한다. 쉽게 말하면 자식 키가 유출되어도 부모 키를 역추적 못하게 보안을 강화한 파생 방식이다. Purpose, Coin Type, Account처럼 중요한 레벨에는 다 붙어있다.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;bip-38&quot;&gt;BIP-38&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#bip-38&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;이건 니모닉을 만들 때 쓰는 알고리즘인데, 랜덤으로 생성한 엔트로피를 사람이 기억하기 쉽게 &lt;code&gt;word list&lt;&#x2F;code&gt; 인덱스로 매핑 시키는거다.&lt;&#x2F;p&gt;
+&lt;p&gt;그래서 초기에 말했던 &lt;code&gt;비밀 문구&lt;&#x2F;code&gt;만 있으면 지갑이 복구가 되는거다.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;p&gt;이런 BIP들이 지켜지며 블록체인 탈중앙화 생태계가 구축된건데, 개인적으로 매우 신기하다. 그냥 수학, 암호학 놀음에 불과한데 (내려치기 하는게 아니다), 이걸 어떻게 공동이 다 지키게 만들었나 싶다.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;camjo&quot;&gt;참조&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#camjo&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;bitcoin&#x2F;bips&quot;&gt;https:&#x2F;&#x2F;github.com&#x2F;bitcoin&#x2F;bips&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;walletrecoveryservice.com&#x2F;ko&#x2F;what-is-bip39&#x2F;&quot;&gt;https:&#x2F;&#x2F;walletrecoveryservice.com&#x2F;ko&#x2F;what-is-bip39&#x2F;&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</content>
+        
+    </entry>
+</feed>

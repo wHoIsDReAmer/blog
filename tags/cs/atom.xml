@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>CWLog - cs</title>
+    <subtitle>개발 &amp; 해킹 좋아하는 사람의 블로그</subtitle>
+    <link rel="self" type="application/atom+xml" href="https://wHoIsDReAmer.github.io/blog/tags/cs/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://wHoIsDReAmer.github.io/blog/"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2025-08-06T00:00:00+00:00</updated>
+    <id>https://wHoIsDReAmer.github.io/blog/tags/cs/atom.xml</id>
+    <entry xml:lang="en">
+        <title>SOA와 AOS</title>
+        <published>2025-08-06T00:00:00+00:00</published>
+        <updated>2025-08-06T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://wHoIsDReAmer.github.io/blog/posts/2025-08-06-soa-aos/"/>
+        <id>https://wHoIsDReAmer.github.io/blog/posts/2025-08-06-soa-aos/</id>
+        
+        <content type="html" xml:base="https://wHoIsDReAmer.github.io/blog/posts/2025-08-06-soa-aos/">&lt;p&gt;근래에 LLM이 떠오르며 SIMD 연산이 중요해지고 그에 따라 자연스럽게 데이터를 다루는 레이아웃을 고민하게 되었다. 여기엔 세가지가 있는데&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;SoA(Structure of Arrays)&lt;&#x2F;li&gt;
+&lt;li&gt;AoS(Array of Structures)&lt;&#x2F;li&gt;
+&lt;li&gt;AoSoA(Array of Structures of Arrays)&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;각각의 레이아웃 장단점이 뭘까?&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;soa-structure-of-arrays&quot;&gt;SoA (Structure of Arrays)&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#soa-structure-of-arrays&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;p&gt;SoA는 구조체 안에 배열을 담는 방식이다. 예를 들어, 다음과 같은 구조체가 있다고 하자.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const&lt;&#x2F;span&gt;&lt;span&gt; N: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;usize &lt;&#x2F;span&gt;&lt;span&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;100&lt;&#x2F;span&gt;&lt;span&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;Person {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;age&lt;&#x2F;span&gt;&lt;span&gt;: [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;i32&lt;&#x2F;span&gt;&lt;span&gt;; N],
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;height&lt;&#x2F;span&gt;&lt;span&gt;: [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f32&lt;&#x2F;span&gt;&lt;span&gt;; N],
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;이 방식은 다음과 같은 상황일 때 이점이 크다.&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;SIMD 연산이 필요할 때 (벡터 집약 연산이 필요할 떄)&lt;&#x2F;li&gt;
+&lt;li&gt;모든 데이터를 업데이트할 때 (CPU 캐시 히트율이 올라감)&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;단점도 있다.&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;구조체 단위 접근 시 불리 (캐시 히트율이 떨어짐)&lt;&#x2F;li&gt;
+&lt;li&gt;가독성 저하 (코드 관리 및 데이터 관리가 어려움)&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;특수한 유즈케이스가 아니면 잘 쓰지 않는다.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;aos-array-of-structures&quot;&gt;AoS (Array of Structures)&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#aos-array-of-structures&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;p&gt;AoS는 구조체를 배열로 만드는 레이아웃 방법이다. 흔히 일반적인 개발자라면 많이 볼 수 있는 방법이다.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;Person {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;age&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;i32&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;height&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f32&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; people: Vec&amp;lt;Person&amp;gt; = vec![
+&lt;&#x2F;span&gt;&lt;span&gt;    Person { age: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;20&lt;&#x2F;span&gt;&lt;span&gt;, height: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;170.0 &lt;&#x2F;span&gt;&lt;span&gt;},
+&lt;&#x2F;span&gt;&lt;span&gt;    Person { age: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;21&lt;&#x2F;span&gt;&lt;span&gt;, height: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;175.0 &lt;&#x2F;span&gt;&lt;span&gt;},
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; ...
+&lt;&#x2F;span&gt;&lt;span&gt;];
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;이 방식은 각각의 구조체에 접근할 때 효율이 좋다.&lt;&#x2F;p&gt;
+&lt;p&gt;다만, 한번에 대량의 데이터에 접근하려면 모든 구조체에 접근해야 하기 떄문에 비효율적이다.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;aosoa-array-of-structures-of-arrays&quot;&gt;AoSoA (Array of Structures of Arrays)&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#aosoa-array-of-structures-of-arrays&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h1&gt;
+&lt;p&gt;이건 위 두 방식의 장점을 합쳐 &lt;code&gt;SIMD&lt;&#x2F;code&gt; 연산에 특화된 설계 방식이다.&lt;&#x2F;p&gt;
+&lt;p&gt;간단한데, SoA 방식을 사용하고 그걸 다시 AoS 방식으로 묶는 방법이다.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;PersonBlock {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;age&lt;&#x2F;span&gt;&lt;span&gt;: [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;i32&lt;&#x2F;span&gt;&lt;span&gt;; 8],
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;height&lt;&#x2F;span&gt;&lt;span&gt;: [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f32&lt;&#x2F;span&gt;&lt;span&gt;; 8],
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; people: Vec&amp;lt;PersonBlock&amp;gt; = vec![
+&lt;&#x2F;span&gt;&lt;span&gt;    PersonBlock {
+&lt;&#x2F;span&gt;&lt;span&gt;        age: [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;20&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;21&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;22&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;23&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;24&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;25&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;26&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;27&lt;&#x2F;span&gt;&lt;span&gt;],
+&lt;&#x2F;span&gt;&lt;span&gt;        height: [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;170.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;175.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;180.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;185.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;190.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;195.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;200.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;205.0&lt;&#x2F;span&gt;&lt;span&gt;],
+&lt;&#x2F;span&gt;&lt;span&gt;    },
+&lt;&#x2F;span&gt;&lt;span&gt;    PersonBlock {
+&lt;&#x2F;span&gt;&lt;span&gt;        age: [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;28&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;29&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;30&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;31&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;32&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;33&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;34&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;35&lt;&#x2F;span&gt;&lt;span&gt;],
+&lt;&#x2F;span&gt;&lt;span&gt;        height: [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;210.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;215.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;220.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;225.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;230.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;235.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;240.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;245.0&lt;&#x2F;span&gt;&lt;span&gt;],
+&lt;&#x2F;span&gt;&lt;span&gt;    },
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; ...
+&lt;&#x2F;span&gt;&lt;span&gt;];
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;이렇게 하면 한번에 8개(256비트, SIMD 연산에 최적화됨)의 데이터에 접근할 수 있고, 모든 데이터를 업데이트할 때도 효율적이다.&lt;&#x2F;p&gt;
+&lt;p&gt;또한 SoA 로 설계된 데이터에선 SIMD 연산을 할 때 직접 오프셋과 끝을 정해줘야 했는데, AoSoA 방식에서는 블록 단위로 자연스럽게 SIMD 연산이 가능하다는 장점이 있다.&lt;&#x2F;p&gt;
+&lt;p&gt;이제 대충 물리 시뮬레이터를 만들어서 벤치마킹을 해보자.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# AoS 모든 위치 업데이트 벤치마크
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;AoS&lt;&#x2F;span&gt;&lt;span&gt; update positions    time:   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;2.8440 ms 2.8596 ms 2.8775 ms&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;change: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;−2.5705% −1.7786% −0.9646%&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]&lt;&#x2F;span&gt;&lt;span&gt; (p = 0.00 &amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;.05)
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Change&lt;&#x2F;span&gt;&lt;span&gt; within noise threshold.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Found&lt;&#x2F;span&gt;&lt;span&gt; 10 outliers among 100 measurements (10.00%)
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;6&lt;&#x2F;span&gt;&lt;span&gt; (6.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; mild
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;4&lt;&#x2F;span&gt;&lt;span&gt; (4.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; severe
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Benchmarking&lt;&#x2F;span&gt;&lt;span&gt; SoA update positions: Warming up for 3.0000 s
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Warning:&lt;&#x2F;span&gt;&lt;span&gt; Unable to complete 100 samples in 5.0s. You may wish to increase target time to 6.8s, enable flat sampling, or reduce sample count to 60.
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# SoA 모든 위치 업데이트 벤치마크
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;SoA&lt;&#x2F;span&gt;&lt;span&gt; update positions    time:   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;1.3333 ms 1.3451 ms 1.3598 ms&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;change: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;−2.3746% −1.1937% −0.0467%&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]&lt;&#x2F;span&gt;&lt;span&gt; (p = 0.05 &amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;.05)
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;No&lt;&#x2F;span&gt;&lt;span&gt; change in performance detected.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Found&lt;&#x2F;span&gt;&lt;span&gt; 12 outliers among 100 measurements (12.00%)
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;5&lt;&#x2F;span&gt;&lt;span&gt; (5.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; mild
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;7&lt;&#x2F;span&gt;&lt;span&gt; (7.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; severe
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# AoSoA 모든 위치 업데이트 벤치마크
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;AoSoA&lt;&#x2F;span&gt;&lt;span&gt; update positions  time:   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;2.7560 ms 2.7724 ms 2.7909 ms&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;change: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;−1.3765% −0.5173% +0.4083%&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]&lt;&#x2F;span&gt;&lt;span&gt; (p = 0.26 &amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;.05)
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;No&lt;&#x2F;span&gt;&lt;span&gt; change in performance detected.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Found&lt;&#x2F;span&gt;&lt;span&gt; 14 outliers among 100 measurements (14.00%)
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;8&lt;&#x2F;span&gt;&lt;span&gt; (8.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; mild
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;6&lt;&#x2F;span&gt;&lt;span&gt; (6.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; severe
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# ------------------------------------------------------------
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# AoS 운동 에너지 계산 벤치마크
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;AoS&lt;&#x2F;span&gt;&lt;span&gt; kinetic energy      time:   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;2.3260 ms 2.3430 ms 2.3620 ms&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;change: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;−3.2449% −2.0336% −0.9182%&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]&lt;&#x2F;span&gt;&lt;span&gt; (p = 0.00 &amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;.05)
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Change&lt;&#x2F;span&gt;&lt;span&gt; within noise threshold.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Found&lt;&#x2F;span&gt;&lt;span&gt; 11 outliers among 100 measurements (11.00%)
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;6&lt;&#x2F;span&gt;&lt;span&gt; (6.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; mild
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;5&lt;&#x2F;span&gt;&lt;span&gt; (5.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; severe
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Benchmarking&lt;&#x2F;span&gt;&lt;span&gt; SoA kinetic energy: Warming up for 3.0000 s
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Warning:&lt;&#x2F;span&gt;&lt;span&gt; Unable to complete 100 samples in 5.0s. You may wish to increase target time to 6.6s, enable flat sampling, or reduce sample count to 60.
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# SoA 운동 에너지 계산 벤치마크
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;SoA&lt;&#x2F;span&gt;&lt;span&gt; kinetic energy      time:   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;1.3045 ms 1.3221 ms 1.3428 ms&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;change: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;−1.5365% −0.4294% +0.7775%&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]&lt;&#x2F;span&gt;&lt;span&gt; (p = 0.46 &amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;.05)
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;No&lt;&#x2F;span&gt;&lt;span&gt; change in performance detected.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Found&lt;&#x2F;span&gt;&lt;span&gt; 6 outliers among 100 measurements (6.00%)
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;4&lt;&#x2F;span&gt;&lt;span&gt; (4.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; mild
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;2&lt;&#x2F;span&gt;&lt;span&gt; (2.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; severe
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# AoSoA 운동 에너지 계산 벤치마크
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;AoSoA&lt;&#x2F;span&gt;&lt;span&gt; kinetic energy    time:   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;2.3083 ms 2.3286 ms 2.3521 ms&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;change: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;−2.5771% −1.3791% −0.1421%&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]&lt;&#x2F;span&gt;&lt;span&gt; (p = 0.02 &amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;.05)
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Change&lt;&#x2F;span&gt;&lt;span&gt; within noise threshold.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Found&lt;&#x2F;span&gt;&lt;span&gt; 11 outliers among 100 measurements (11.00%)
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;3&lt;&#x2F;span&gt;&lt;span&gt; (3.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; mild
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;8&lt;&#x2F;span&gt;&lt;span&gt; (8.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; severe
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Benchmarking&lt;&#x2F;span&gt;&lt;span&gt; AoS sum x coordinates: Warming up for 3.0000 s
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Warning:&lt;&#x2F;span&gt;&lt;span&gt; Unable to complete 100 samples in 5.0s. You may wish to increase target time to 9.1s, enable flat sampling, or reduce sample count to 50.
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# AoS x 좌표 합 벤치마크
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;AoS&lt;&#x2F;span&gt;&lt;span&gt; sum x coordinates   time:   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;1.8064 ms 1.8162 ms 1.8274 ms&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;change: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;−1.9885% −1.1965% −0.3979%&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]&lt;&#x2F;span&gt;&lt;span&gt; (p = 0.00 &amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;.05)
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Change&lt;&#x2F;span&gt;&lt;span&gt; within noise threshold.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Found&lt;&#x2F;span&gt;&lt;span&gt; 11 outliers among 100 measurements (11.00%)
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;7&lt;&#x2F;span&gt;&lt;span&gt; (7.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; mild
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;4&lt;&#x2F;span&gt;&lt;span&gt; (4.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; severe
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# SoA x 좌표 합 벤치마크
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;SoA&lt;&#x2F;span&gt;&lt;span&gt; sum x coordinates   time:   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;928.80 µs 937.06 µs 946.70 µs&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;change: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;−2.9895% −1.8426% −0.6016%&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]&lt;&#x2F;span&gt;&lt;span&gt; (p = 0.00 &amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;.05)
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Change&lt;&#x2F;span&gt;&lt;span&gt; within noise threshold.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Found&lt;&#x2F;span&gt;&lt;span&gt; 5 outliers among 100 measurements (5.00%)
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;5&lt;&#x2F;span&gt;&lt;span&gt; (5.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; mild
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Benchmarking&lt;&#x2F;span&gt;&lt;span&gt; AoSoA sum x coordinates: Warming up for 3.0000 s
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Warning:&lt;&#x2F;span&gt;&lt;span&gt; Unable to complete 100 samples in 5.0s. You may wish to increase target time to 8.8s, enable flat sampling, or reduce sample count to 50.
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# AoSoA x 좌표 합 벤치마크
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;AoSoA&lt;&#x2F;span&gt;&lt;span&gt; sum x coordinates time:   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;1.7468 ms 1.7510 ms 1.7559 ms&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;change: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;−1.6810% −0.9152% −0.1729%&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]&lt;&#x2F;span&gt;&lt;span&gt; (p = 0.02 &amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;.05)
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Change&lt;&#x2F;span&gt;&lt;span&gt; within noise threshold.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Found&lt;&#x2F;span&gt;&lt;span&gt; 12 outliers among 100 measurements (12.00%)
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;5&lt;&#x2F;span&gt;&lt;span&gt; (5.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; mild
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;7&lt;&#x2F;span&gt;&lt;span&gt; (7.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; severe
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;결과를 보면 전반적으로 SoA -&amp;gt; AoSoA -&amp;gt; AoS 순으로 성능이 좋다.
+벤치마크 코드는 &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;wHoIsDReAmer&#x2F;blog&#x2F;tree&#x2F;main&#x2F;tests&#x2F;soa-aos&quot;&gt;블로그 깃헙&lt;&#x2F;a&gt;에서 확인할 수 있다.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;참조&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;AoS_and_SoA&quot;&gt;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;AoS_and_SoA&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>코루틴이란?</title>
+        <published>2025-05-09T00:00:00+00:00</published>
+        <updated>2025-05-09T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://wHoIsDReAmer.github.io/blog/posts/2025-05-09-what-is-the-coroutine/"/>
+        <id>https://wHoIsDReAmer.github.io/blog/posts/2025-05-09-what-is-the-coroutine/</id>
+        
+        <content type="html" xml:base="https://wHoIsDReAmer.github.io/blog/posts/2025-05-09-what-is-the-coroutine/">&lt;h2 id=&quot;korutin&quot;&gt;코루틴&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#korutin&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;p&gt;흔히 코틀린을 사용할 때 자주 만날 수 있는 단어인 코루틴, 깊게 알아보자.&lt;&#x2F;p&gt;
+&lt;p&gt;코루틴이란 Co (ooperation 협동) + routine (루틴) 단어가 합쳐져 생긴 개념이다.&lt;&#x2F;p&gt;
+&lt;p&gt;스레드처럼 백그라운드 작업을 위임할 때 많이 사용되는데, 이는 코틀린 뿐만 아니라 여러 언어에서도 통용된다. (Rust 비동기 모델, Go 등등..) 결국 코루틴은 하나의 비동기 프로그래밍을 위한 추상화 도구이기 때문이다.&lt;&#x2F;p&gt;
+&lt;p&gt;코루틴이 어떻게 구현되는지 살펴보자. 일반적으로 코루틴은 내부적으로 상태 머신(state machine)을 사용한다.&lt;&#x2F;p&gt;
+&lt;p&gt;상태 머신이란 여러 상태(state)를 가지고 있으며, 특정 조건에 따라 상태 간 전환이 이루어지는 시스템을 뜻한다. 코루틴은 실행 중에 여러 상태를 거치며, 각 상태에서 일시 중단되고 다시 시작될 수 있다.&lt;&#x2F;p&gt;
+&lt;p&gt;그럼 이 상태 머신은 구체적으로 어떻게 구현될까? 코루틴을 지원하는 언어의 컴파일러는 우리가 작성한 코드를 분석하고 변환하여 내부적으로 상태 머신을 만들어낸다. 예를 들어, 코틀린에서 &lt;code&gt;suspend&lt;&#x2F;code&gt; 키워드가 붙은 함수나 C#의 &lt;code&gt;async&#x2F;await&lt;&#x2F;code&gt; 구문을 사용하면, 컴파일러는 이 함수들을 여러 조각으로 나누고 각 중단 가능 지점(suspension point)을 기준으로 상태를 관리하는 코드를 생성한다.&lt;&#x2F;p&gt;
+&lt;p&gt;코루틴이 일시 중단될 때, 컴파일러는 해당 시점의 **실행 컨텍스트(execution context)**를 저장하기 위한 메커니즘을 작동시킨다. 이 컨텍스트에는 다음 실행을 위해 필요한 모든 정보, 즉 &lt;strong&gt;지역 변수의 현재 값들, 명령어 포인터(다음에 실행할 코드의 주소), 그리고 현재 호출 스택의 일부 정보(필요한 경우)&lt;&#x2F;strong&gt; 등이 포함된다. 이런 정보들이 힙(heap) 메모리에 할당되는 &lt;strong&gt;&#x27;컨티뉴에이션 객체(Continuation Object)&#x27;&lt;&#x2F;strong&gt; 또는 이와 유사한 자료 구조에 패키징되어 저장된다.&lt;&#x2F;p&gt;
+&lt;p&gt;나중에 스케줄러(scheduler)에 의해 해당 코루틴이 다시 실행될 준비가 되면 이 저장된 컨티뉴에이션 객체가 활성화된다. 시스템은 이 객체로부터 지역 변수들을 복원하고, 명령어 포인터를 중단됐던 지점으로 정확히 되돌려 놓음으로써 코루틴이 실행을 재개할 수 있게 된다.&lt;&#x2F;p&gt;
+&lt;p&gt;상태 머신을 다루는 방법 중에 대표적으로 두가지 방법으로 나뉜다. 스택리스 코루틴과 스택풀 코루틴이다.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;seutaegriseu-korutin&quot;&gt;스택리스 코루틴&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#seutaegriseu-korutin&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;스택리스 코루틴은 상태를 저장함과 동시에 힙으로 변수 값과 실행 위치(몇 번째에서 중단되는지)이 저장된다. 스택을 사용하지 않기 때문에 상대적으로 컨텍스트 스위치 비용도 적고, 메모리 용량도 작아지고 효율적이다.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;seutaegpul-korutin&quot;&gt;스택풀 코루틴&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#seutaegpul-korutin&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;스택풀 코루틴은 상태를 저장할 때 스택째로 저장하는 방법이다. 용량도 더 들고, 재귀 함수에서 잘못 사용 시 스택오버플로우가 발생한다. 다만, 일반 함수랑 동일한 원리로 동작하기 때문에 디버깅이 편리하다는 장점이 있다.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;siseutem-kol&quot;&gt;시스템 콜&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#siseutem-kol&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;상태 머신은 일반적으로 시스템 콜(syscall)로 제어한다. 거의 코루틴의 핵심이라고 봐도 무방하다.&lt;&#x2F;p&gt;
+&lt;p&gt;애플리케이션에서 스레드를 사용하진 않지만, I&#x2F;O 작업이 발생하면 OS에 해당 작업 스레드를 위임한다. 그리고, 시스템 콜에 해당 작업이 완료되면 이벤트를 보내달라고 요청한다. 그리고 이벤트가 내려지기까지 기다린다. (상태 머신이 상태가 바뀔 때까지 기다림) 이벤트가 내려지면 해당 작업을 다시 재개하는 방식이다.&lt;&#x2F;p&gt;
+&lt;p&gt;다음은 운영체제별 메커니즘이다.&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;color:#c0c5ce;&quot;&gt;&lt;code&gt;&lt;span&gt;리눅스: epoll
+&lt;&#x2F;span&gt;&lt;span&gt;윈도우: IOCP
+&lt;&#x2F;span&gt;&lt;span&gt;BSD: kqueue
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;위와 같이 운영체제마다 조금씩 차이가 있지만 동일한 메커니즘으로 이벤트를 내려준다.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>

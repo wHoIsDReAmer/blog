@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+<head>
+    
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>PE 포맷 파일 구조</title>
+
+
+<meta name="keywords" content="programming, hacking, security, coding, developer, develop">
+
+
+
+<meta name="description" content="PE 파일의 헤더&#x2F;섹션 구조와 정렬 개념을 요약합니다.">
+
+
+
+
+
+<link rel="canonical" href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;posts&#x2F;2025-06-08-pe-format&#x2F;">
+
+
+<link rel="stylesheet" href="https://wHoIsDReAmer.github.io/blog/css/includes/scroll-bar.css">
+<link rel="stylesheet" href="https://wHoIsDReAmer.github.io/blog/css/styles.css">
+<link rel="stylesheet" href="https://wHoIsDReAmer.github.io/blog/css/override.css">
+
+
+
+
+
+
+
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+    </style>
+    
+</noscript>
+
+
+
+    
+</head>
+<body class=" dark" id="top">
+    
+    
+<script>
+    if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    }
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;" accesskey="h" title="CWLog (Alt + H)">
+                CWLog
+            </a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+                <ul class="lang-switch">
+                    <li></li>
+                </ul>
+            </div>
+        </div>
+        
+    </nav>
+</header>
+
+    
+    <main class="main">
+        
+<article class="post-single">
+  <header class="post-header">
+      <div class="breadcrumbs">
+          <a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;">Home</a>&nbsp;»&nbsp;
+          <a href="https://wHoIsDReAmer.github.io/blog/posts/">Posts</a>&nbsp;»&nbsp;
+          <a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;posts&#x2F;2025-06-08-pe-format&#x2F;">PE 포맷 파일 구조</a>
+      </div>
+      <h1 class="post-title">PE 포맷 파일 구조</h1>
+      
+      
+      <div class="post-description">
+          PE 파일의 헤더&#x2F;섹션 구조와 정렬 개념을 요약합니다.
+      </div>
+      
+      
+      <div class="post-meta">
+      
+
+
+
+
+
+
+
+
+
+
+<span title="2025-06-08 00:00:00 +0000">2025-06-08</span>&nbsp;·&nbsp;
+
+      
+      </div>
+      
+  </header>
+
+  
+  
+
+<div class="toc">
+    <details  open>
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner">
+            <ul>
+                
+                <li>
+                    <a href="#pe-pomaesiran" aria-label="PE 포맷이란">PE 포맷이란</a>
+                    
+                    <ul>
+                    
+                        <li>
+                            <a href="#pail-jongryu" aria-label="파일 종류">파일 종류</a>
+                            
+                        </li>
+                    
+                        <li>
+                            <a href="#pe-pomaes-pail-gujo" aria-label="PE 포맷 파일 구조">PE 포맷 파일 구조</a>
+                            
+                            <ul>
+                                
+                                <li><a href="#sesyeon-jeongryeol" aria-label="세션 정렬">세션 정렬</a></li>
+                                
+                            </ul>
+                            
+                        </li>
+                    
+                        <li>
+                            <a href="#dos-header" aria-label="DOS Header">DOS Header</a>
+                            
+                        </li>
+                    
+                        <li>
+                            <a href="#dos-stub" aria-label="DOS Stub">DOS Stub</a>
+                            
+                        </li>
+                    
+                        <li>
+                            <a href="#nt-header" aria-label="NT Header">NT Header</a>
+                            
+                        </li>
+                    
+                        <li>
+                            <a href="#nt-header-gujoce" aria-label="NT Header 구조체">NT Header 구조체</a>
+                            
+                        </li>
+                    
+                        <li>
+                            <a href="#fileheader-gujoce" aria-label="FileHeader 구조체">FileHeader 구조체</a>
+                            
+                        </li>
+                    
+                        <li>
+                            <a href="#optionalheader-gujoce" aria-label="OptionalHeader 구조체">OptionalHeader 구조체</a>
+                            
+                        </li>
+                    
+                        <li>
+                            <a href="#segsyeon-hedeo" aria-label="섹션 헤더">섹션 헤더</a>
+                            
+                        </li>
+                    
+                    </ul>
+                    
+                </li>
+                
+                <li>
+                    <a href="#camjo" aria-label="참조">참조</a>
+                    
+                </li>
+                
+            </ul>
+        </div>
+    </details>
+</div>
+
+
+  
+
+  
+  <div class="post-content">
+      <h2 id="pe-pomaesiran">PE 포맷이란<a class="anchor" aria-hidden="true" href="#pe-pomaesiran" hidden="">#</a>
+</h2>
+<p>PE 포맷은 <strong>Portable Excutable</strong>의 약자로 윈도우 운영체제에서 실행 가능한 파일을 위한 포맷 형식이다. 시그니처는 <code>MZ</code>. (MS-DOS의 개발자인 마크 즈비코프스키의 이름을 땄다.)</p>
+<h3 id="pail-jongryu">파일 종류<a class="anchor" aria-hidden="true" href="#pail-jongryu" hidden="">#</a>
+</h3>
+<ul>
+<li>실행: <code>.exe, .scr</code></li>
+<li>드라이버: <code>.sys, .vxd</code></li>
+<li>라이브러리: <code>.dll, .ocx, .cpl, .drv</code></li>
+<li>오브젝트: <code>.obj</code></li>
+</ul>
+<p><code>.scr</code> 확장자는 생소해서 찾아봤더니 스크린 보호기 파일이라고 한다. 실행 가능하게 만들어지고, 생소해서 악성 코드로 많이 사용된다고 한다.</p>
+<h3 id="pe-pomaes-pail-gujo">PE 포맷 파일 구조<a class="anchor" aria-hidden="true" href="#pe-pomaes-pail-gujo" hidden="">#</a>
+</h3>
+<p>윈도우는 NT 3.1 이후로 PE 포맷으로 확장적으로 옮겼다고 한다. 그래서 PE 파일은 명시적으로 DOS 환경을 지원한다. 다만, 실제로 빌드된 파일을 DOS 환경에서 실행하면 <code>This program cannot be run in DOS mode</code> 라는 메시지를 보여준다. 단순히 호환성만 유지..</p>
+<p><img src="../../images/Portable_Executable_32_bit_Structure_in_SVG.svg" alt="PE 포맷 파일 구조" /></p>
+<p>위 사진을 바탕으로, 크게 구조를 헤더와 바디로 나눌 수 있다. 헤더에는 DOS Header와 DOS Stub이 있고, 바디에는 이 헤더에 정의된 섹션들이 있다.</p>
+<p>이렇게 구조화된 이유는, 프로세스 동적 링커에게 파일을 어떻게 메모리로 매핑할 지 설명할 수 있게 하기 위해서다.</p>
+<p>각 세션별로 OS에게 요구하는 권한이 다르다. 예를 들어, 코드 섹션(대표적으로 <code>.text</code>)은 읽기 권한이 필요하고, 데이터 섹션(대표적으로 <code>.data</code>)은 읽기/쓰기 권한이 필요하다.</p>
+<h4 id="sesyeon-jeongryeol">세션 정렬<a class="anchor" aria-hidden="true" href="#sesyeon-jeongryeol" hidden="">#</a>
+</h4>
+<p>디스크와 메모리에서 요구하는 정렬 방식이 다른데, 이는 목적성이 다르기 때문이다.</p>
+<p>메모리에서 섹션은 페이지 단위(일반적으로 4kb)로 정렬되어야 한다. 이러한 이유는 메모리 효율성에서 찾아볼 수 있다. 페이지 섹션의 크기가 작으면 <strong>페이지 테이블</strong>이 커지고, (여러 페이지의 권한 정보를 모두 리스트업 해야하니) 페이지 섹션의 크기가 크면 <strong>낭비되는 공간</strong>이 커진다.</p>
+<p>즉, 디스크에서 사용하는 <code>FlieAlignment</code>와 <code>SectionAlignment</code>가 다른 이유가 이것이다. 디스크에 있는 그대로 정렬하면 메모리 효율성이 떨어지기 때문에.</p>
+<p>반대로도 똑같다. 메모리에 4kb로 저장하던 걸 디스크에 그대로 빼다박으면 낭비되는 공간이 커진다.</p>
+<h3 id="dos-header">DOS Header<a class="anchor" aria-hidden="true" href="#dos-header" hidden="">#</a>
+</h3>
+<p>앞서 설명한 내용이 도스 헤더에 반영되어 있기에 길게 설명할 건 없고, 구조체로 직접 살펴보자.</p>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span>#[</span><span style="color:#bf616a;">repr</span><span>(C)]
+</span><span style="color:#b48ead;">struct </span><span>DOSHeader {
+</span><span>    </span><span style="color:#bf616a;">e_magic</span><span>: </span><span style="color:#b48ead;">u16</span><span>,      </span><span style="color:#65737e;">// 매직 넘버: 항상 &#39;MZ&#39;(0x5A4D) 값을 가집니다. DOS 실행 파일임을 나타냅니다.
+</span><span>    </span><span style="color:#bf616a;">e_cblp</span><span>: </span><span style="color:#b48ead;">u16</span><span>,       </span><span style="color:#65737e;">// 파일의 마지막 페이지에 있는 바이트 수
+</span><span>    </span><span style="color:#bf616a;">e_cp</span><span>: </span><span style="color:#b48ead;">u16</span><span>,         </span><span style="color:#65737e;">// 파일에 있는 페이지 수
+</span><span>    </span><span style="color:#bf616a;">e_crlc</span><span>: </span><span style="color:#b48ead;">u16</span><span>,       </span><span style="color:#65737e;">// 재배치(Relocation) 수
+</span><span>    </span><span style="color:#bf616a;">e_cparhdr</span><span>: </span><span style="color:#b48ead;">u16</span><span>,    </span><span style="color:#65737e;">// 단락(paragraph) 단위의 헤더 크기 (1 단락 = 16 바이트)
+</span><span>    </span><span style="color:#bf616a;">e_minalloc</span><span>: </span><span style="color:#b48ead;">u16</span><span>,   </span><span style="color:#65737e;">// 프로그램을 실행하기 위해 필요한 최소 추가 단락 수
+</span><span>    </span><span style="color:#bf616a;">e_maxalloc</span><span>: </span><span style="color:#b48ead;">u16</span><span>,   </span><span style="color:#65737e;">// 프로그램을 실행하기 위해 필요한 최대 추가 단락 수
+</span><span>    </span><span style="color:#bf616a;">e_ss</span><span>: </span><span style="color:#b48ead;">u16</span><span>,         </span><span style="color:#65737e;">// 초기 스택 세그먼트(SS) 레지스터 값
+</span><span>    </span><span style="color:#bf616a;">e_sp</span><span>: </span><span style="color:#b48ead;">u16</span><span>,         </span><span style="color:#65737e;">// 초기 스택 포인터(SP) 레지스터 값
+</span><span>    </span><span style="color:#bf616a;">e_csum</span><span>: </span><span style="color:#b48ead;">u16</span><span>,       </span><span style="color:#65737e;">// 체크섬
+</span><span>    </span><span style="color:#bf616a;">e_ip</span><span>: </span><span style="color:#b48ead;">u16</span><span>,         </span><span style="color:#65737e;">// 초기 명령어 포인터(IP) 레지스터 값
+</span><span>    </span><span style="color:#bf616a;">e_cs</span><span>: </span><span style="color:#b48ead;">u16</span><span>,         </span><span style="color:#65737e;">// 초기 코드 세그먼트(CS) 레지스터 값
+</span><span>    </span><span style="color:#bf616a;">e_lfarlc</span><span>: </span><span style="color:#b48ead;">u16</span><span>,     </span><span style="color:#65737e;">// 재배치 테이블의 파일 주소
+</span><span>    </span><span style="color:#bf616a;">e_ovno</span><span>: </span><span style="color:#b48ead;">u16</span><span>,       </span><span style="color:#65737e;">// 오버레이 번호
+</span><span>    </span><span style="color:#bf616a;">e_res</span><span>: [</span><span style="color:#b48ead;">u16</span><span>; 4],   </span><span style="color:#65737e;">// 예약된 공간
+</span><span>    </span><span style="color:#bf616a;">e_oemid</span><span>: </span><span style="color:#b48ead;">u16</span><span>,      </span><span style="color:#65737e;">// OEM 식별자
+</span><span>    </span><span style="color:#bf616a;">e_oeminfo</span><span>: </span><span style="color:#b48ead;">u16</span><span>,    </span><span style="color:#65737e;">// OEM 정보
+</span><span>    </span><span style="color:#bf616a;">e_res2</span><span>: [</span><span style="color:#b48ead;">u16</span><span>; 10], </span><span style="color:#65737e;">// 예약된 공간
+</span><span>    </span><span style="color:#bf616a;">e_lfanew</span><span>: </span><span style="color:#b48ead;">u32</span><span>,     </span><span style="color:#65737e;">// PE 헤더(NT 헤더)의 파일 오프셋. 가장 중요한 필드입니다.
+</span><span>}
+</span></code></pre>
+<p>일반적으로 현대 NT에서는 쓸모없는 정보들이다. 과거 호환성만 남겨놓으려고 만들어진 것이기 때문에 훑고 넘어가도 괜찮다. e_lfanew 필드가 중요한데, 이는 PE 헤더(NT 헤더)의 파일 오프셋을 가리킨다.</p>
+<h3 id="dos-stub">DOS Stub<a class="anchor" aria-hidden="true" href="#dos-stub" hidden="">#</a>
+</h3>
+<p>현대 NT 헤더 다음에 있는 영역인데, 따로 중요한 부분은 아니다. DOS 환경에서 실행되는 파일이라면 이 영역에 있는 코드가 실행된다.</p>
+<h3 id="nt-header">NT Header<a class="anchor" aria-hidden="true" href="#nt-header" hidden="">#</a>
+</h3>
+<p>NT 헤더 구조체는 1개의 시그니처 필드와 2개의 하위 구조체로 이루어져 있다. 시그니처 필드는 항상 <code>PE\0\0</code> 값을 가진다.</p>
+<p>말로만 해서는 뭐가 뭔지 모르니, 하나씩 톺아보자.</p>
+<h3 id="nt-header-gujoce">NT Header 구조체<a class="anchor" aria-hidden="true" href="#nt-header-gujoce" hidden="">#</a>
+</h3>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span>#[</span><span style="color:#bf616a;">repr</span><span>(C)]
+</span><span style="color:#b48ead;">struct </span><span>NTHeader {
+</span><span>    </span><span style="color:#bf616a;">signature</span><span>: </span><span style="color:#b48ead;">u32</span><span>,                      </span><span style="color:#65737e;">// 시그니처: 항상 &#39;PE\0\0&#39; (0x50450000) 값을 가집니다.
+</span><span>    </span><span style="color:#bf616a;">file_header</span><span>: FileHeader,             </span><span style="color:#65737e;">// 파일의 물리적 레이아웃과 속성에 대한 정보
+</span><span>    </span><span style="color:#bf616a;">optional_header</span><span>: OptionalHeader,     </span><span style="color:#65737e;">// 파일의 논리적 실행에 필요한 정보 (이름과 달리 필수)
+</span><span>}
+</span></code></pre>
+<p><strong>signature</strong><br />
+항상 <code>PE\0\0</code> 값을 가진다.</p>
+<p><strong>file_header</strong><br />
+파일의 물리적 레이아웃과 속성에 대한 정보 (아래 FileHeader 구조체)</p>
+<p><strong>optional_header</strong><br />
+파일의 논리적 실행에 필요한 정보 (아래 OptionalHeader 구조체)</p>
+<h3 id="fileheader-gujoce">FileHeader 구조체<a class="anchor" aria-hidden="true" href="#fileheader-gujoce" hidden="">#</a>
+</h3>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span>#[</span><span style="color:#bf616a;">repr</span><span>(C)]
+</span><span style="color:#b48ead;">struct </span><span>FileHeader {
+</span><span>    </span><span style="color:#bf616a;">machine</span><span>: </span><span style="color:#b48ead;">u16</span><span>,                </span><span style="color:#65737e;">// 대상 CPU 아키텍처 (e.g., 0x8664 for x64, 0x14c for x86), WinNT.h에 정의된 값
+</span><span>    </span><span style="color:#bf616a;">number_of_sections</span><span>: </span><span style="color:#b48ead;">u16</span><span>,     </span><span style="color:#65737e;">// 섹션 헤더 테이블에 있는 섹션의 수
+</span><span>    </span><span style="color:#bf616a;">time_date_stamp</span><span>: </span><span style="color:#b48ead;">u32</span><span>,        </span><span style="color:#65737e;">// 파일이 생성된 시간 (Unix timestamp)
+</span><span>    </span><span style="color:#bf616a;">pointer_to_symbol_table</span><span>: </span><span style="color:#b48ead;">u32</span><span>,</span><span style="color:#65737e;">// COFF 심볼 테이블의 파일 오프셋 (디버깅용, 보통 0)
+</span><span>    </span><span style="color:#bf616a;">number_of_symbols</span><span>: </span><span style="color:#b48ead;">u32</span><span>,      </span><span style="color:#65737e;">// COFF 심볼 테이블의 심볼 수
+</span><span>    </span><span style="color:#bf616a;">size_of_optional_header</span><span>: </span><span style="color:#b48ead;">u16</span><span>,</span><span style="color:#65737e;">// 바로 뒤에 오는 OptionalHeader의 크기
+</span><span>    </span><span style="color:#bf616a;">characteristics</span><span>: </span><span style="color:#b48ead;">u16</span><span>,        </span><span style="color:#65737e;">// 파일의 속성을 나타내는 플래그 (e.g., 실행 가능한지, DLL인지, 커널인지 ...)
+</span><span>}
+</span></code></pre>
+<p><strong>machine</strong><br />
+대상 CPU 아키텍처 (e.g., 0x8664 for x64, 0x14c for x86)<br />
+상수는 <code>WinNT.h</code>에 정의되어 있다.</p>
+<p><strong>number_of_sections</strong><br />
+현재 PE파일의 섹션 헤더 테이블에 있는 섹션의 수</p>
+<p><strong>time_date_stamp</strong><br />
+파일이 생성된 시간 (Unix timestamp)<br />
+변조가 가능하다.</p>
+<p><strong>size_of_optional_header</strong><br />
+OptionalHeader 구조체의 크기</p>
+<p><strong>characteristics</strong><br />
+파일의 속성을 나타내는 플래그 (e.g., 실행 가능한지, DLL인지, 커널인지 ...)<br />
+이것도 동일하게 <code>WinNT.h</code>에 정의되어 있다.</p>
+<p>예를 들어보자:</p>
+<ul>
+<li><code>0001</code>: IMAGE_FILE_RELOCS_STRIPPED - 해당 파일에서 재배치 정보가 삭제됨</li>
+<li><code>0002</code>: IMAGE_FILE_EXECUTABLE_IMAGE - 해당 파일은 실행가능한 EXE 파일임</li>
+<li><code>0004</code>: IMAGE_FILE_LINE_NUMS_STRIPPED - 해당 파일은 라인 넘버가 제거됨</li>
+<li><code>0008</code>: IMAGE_FILE_LOCAL_SYMS_STRIPPED - 해당 파일은 로컬 심볼 정보가 제거됨</li>
+<li><code>0100</code>: IMAGE_FILE_32BIT_MACHINE - 해당 파일은 32비트 머신을 필요로 함</li>
+</ul>
+<p>위 플래그들이 비트 or 연산으로 조합되어 있다.</p>
+<h3 id="optionalheader-gujoce">OptionalHeader 구조체<a class="anchor" aria-hidden="true" href="#optionalheader-gujoce" hidden="">#</a>
+</h3>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#65737e;">// 32비트 PE 파일(PE32) 기준의 OptionalHeader
+</span><span>#[</span><span style="color:#bf616a;">repr</span><span>(C)]
+</span><span style="color:#b48ead;">struct </span><span>OptionalHeader {
+</span><span>    </span><span style="color:#65737e;">// --- Standard COFF Fields ---
+</span><span>    </span><span style="color:#bf616a;">magic</span><span>: </span><span style="color:#b48ead;">u16</span><span>,                          </span><span style="color:#65737e;">// 매직 넘버: 0x10b (32-bit), 0x20b (64-bit)
+</span><span>    </span><span style="color:#bf616a;">major_linker_version</span><span>: </span><span style="color:#b48ead;">u8</span><span>,            </span><span style="color:#65737e;">// 링커의 메이저 버전
+</span><span>    </span><span style="color:#bf616a;">minor_linker_version</span><span>: </span><span style="color:#b48ead;">u8</span><span>,            </span><span style="color:#65737e;">// 링커의 마이너 버전
+</span><span>    </span><span style="color:#bf616a;">size_of_code</span><span>: </span><span style="color:#b48ead;">u32</span><span>,                   </span><span style="color:#65737e;">// 모든 코드 섹션(.text)의 총 크기
+</span><span>    </span><span style="color:#bf616a;">size_of_initialized_data</span><span>: </span><span style="color:#b48ead;">u32</span><span>,       </span><span style="color:#65737e;">// 초기화된 데이터 섹션들의 총 크기
+</span><span>    </span><span style="color:#bf616a;">size_of_uninitialized_data</span><span>: </span><span style="color:#b48ead;">u32</span><span>,     </span><span style="color:#65737e;">// 초기화되지 않은 데이터 섹션(.bss)들의 총 크기
+</span><span>    </span><span style="color:#bf616a;">address_of_entry_point</span><span>: </span><span style="color:#b48ead;">u32</span><span>,         </span><span style="color:#65737e;">// 프로그램 실행 시작 주소 (RVA: Relative Virtual Address)
+</span><span>    </span><span style="color:#bf616a;">base_of_code</span><span>: </span><span style="color:#b48ead;">u32</span><span>,                   </span><span style="color:#65737e;">// 첫번째 코드 섹션의 시작 RVA
+</span><span>    </span><span style="color:#bf616a;">base_of_data</span><span>: </span><span style="color:#b48ead;">u32</span><span>,                   </span><span style="color:#65737e;">// 첫번째 데이터 섹션의 시작 RVA (64-bit에서는 이 필드가 없음)
+</span><span>
+</span><span>    </span><span style="color:#65737e;">// --- Windows-specific Fields ---
+</span><span>    </span><span style="color:#bf616a;">image_base</span><span>: </span><span style="color:#b48ead;">u32</span><span>,                     </span><span style="color:#65737e;">// 메모리에 로드될 때의 권장 시작 가상 주소
+</span><span>    </span><span style="color:#bf616a;">section_alignment</span><span>: </span><span style="color:#b48ead;">u32</span><span>,              </span><span style="color:#65737e;">// 메모리에서의 섹션 정렬 단위 (보통 4KB)
+</span><span>    </span><span style="color:#bf616a;">file_alignment</span><span>: </span><span style="color:#b48ead;">u32</span><span>,                 </span><span style="color:#65737e;">// 파일에서의 섹션 정렬 단위 (보통 512 바이트)
+</span><span>    </span><span style="color:#bf616a;">major_operating_system_version</span><span>: </span><span style="color:#b48ead;">u16</span><span>, </span><span style="color:#65737e;">// 필요한 운영체제의 메이저 버전
+</span><span>    </span><span style="color:#bf616a;">minor_operating_system_version</span><span>: </span><span style="color:#b48ead;">u16</span><span>, </span><span style="color:#65737e;">// 필요한 운영체제의 마이너 버전
+</span><span>    </span><span style="color:#bf616a;">major_image_version</span><span>: </span><span style="color:#b48ead;">u16</span><span>,            </span><span style="color:#65737e;">// 이미지의 메이저 버전
+</span><span>    </span><span style="color:#bf616a;">minor_image_version</span><span>: </span><span style="color:#b48ead;">u16</span><span>,            </span><span style="color:#65737e;">// 이미지의 마이너 버전
+</span><span>    </span><span style="color:#bf616a;">major_subsystem_version</span><span>: </span><span style="color:#b48ead;">u16</span><span>,        </span><span style="color:#65737e;">// 서브시스템의 메이저 버전
+</span><span>    </span><span style="color:#bf616a;">minor_subsystem_version</span><span>: </span><span style="color:#b48ead;">u16</span><span>,        </span><span style="color:#65737e;">// 서브시스템의 마이너 버전
+</span><span>    </span><span style="color:#bf616a;">win32_version_value</span><span>: </span><span style="color:#b48ead;">u32</span><span>,            </span><span style="color:#65737e;">// 예약된 필드, 항상 0
+</span><span>    </span><span style="color:#bf616a;">size_of_image</span><span>: </span><span style="color:#b48ead;">u32</span><span>,                  </span><span style="color:#65737e;">// 메모리에 로드된 전체 이미지의 크기
+</span><span>    </span><span style="color:#bf616a;">size_of_headers</span><span>: </span><span style="color:#b48ead;">u32</span><span>,                </span><span style="color:#65737e;">// 모든 헤더(DOS, PE, Section)를 합친 크기
+</span><span>    </span><span style="color:#bf616a;">check_sum</span><span>: </span><span style="color:#b48ead;">u32</span><span>,                      </span><span style="color:#65737e;">// 이미지 파일 체크섬 (유효성 검사)
+</span><span>    </span><span style="color:#bf616a;">subsystem</span><span>: </span><span style="color:#b48ead;">u16</span><span>,                      </span><span style="color:#65737e;">// 실행에 필요한 서브시스템 (e.g., GUI, Console)
+</span><span>    </span><span style="color:#bf616a;">dll_characteristics</span><span>: </span><span style="color:#b48ead;">u16</span><span>,            </span><span style="color:#65737e;">// DLL 관련 보안 플래그 (e.g., ASLR, DEP)
+</span><span>    </span><span style="color:#bf616a;">size_of_stack_reserve</span><span>: </span><span style="color:#b48ead;">u32</span><span>,          </span><span style="color:#65737e;">// 처음에 예약할 스택의 크기
+</span><span>    </span><span style="color:#bf616a;">size_of_stack_commit</span><span>: </span><span style="color:#b48ead;">u32</span><span>,           </span><span style="color:#65737e;">// 처음에 실제로 할당(커밋)할 스택의 크기
+</span><span>    </span><span style="color:#bf616a;">size_of_heap_reserve</span><span>: </span><span style="color:#b48ead;">u32</span><span>,           </span><span style="color:#65737e;">// 처음에 예약할 힙의 크기
+</span><span>    </span><span style="color:#bf616a;">size_of_heap_commit</span><span>: </span><span style="color:#b48ead;">u32</span><span>,            </span><span style="color:#65737e;">// 처음에 실제로 할당(커밋)할 힙의 크기
+</span><span>    </span><span style="color:#bf616a;">loader_flags</span><span>: </span><span style="color:#b48ead;">u32</span><span>,                   </span><span style="color:#65737e;">// 예약된 필드, 사용되지 않음
+</span><span>    </span><span style="color:#bf616a;">number_of_rva_and_sizes</span><span>: </span><span style="color:#b48ead;">u32</span><span>,        </span><span style="color:#65737e;">// 아래 DataDirectory 배열의 유효한 항목 수 (보통 16)
+</span><span>    </span><span style="color:#bf616a;">data_directory</span><span>: [ImageDataDirectory; 16], </span><span style="color:#65737e;">// 데이터 디렉터리 배열
+</span><span>}
+</span><span>
+</span><span style="color:#65737e;">// DataDirectory 배열의 각 항목을 위한 구조체
+</span><span>#[</span><span style="color:#bf616a;">repr</span><span>(C)]
+</span><span style="color:#b48ead;">struct </span><span>ImageDataDirectory {
+</span><span>    </span><span style="color:#bf616a;">virtual_address</span><span>: </span><span style="color:#b48ead;">u32</span><span>, </span><span style="color:#65737e;">// 데이터의 시작 가상 주소 (RVA)
+</span><span>    </span><span style="color:#bf616a;">size</span><span>: </span><span style="color:#b48ead;">u32</span><span>,            </span><span style="color:#65737e;">// 해당 데이터의 크기 (바이트)
+</span><span>}
+</span></code></pre>
+<p><strong>magic</strong><br />
+매직 넘버: 0x10b (32비트), 0x20b (64비트)</p>
+<p><strong>major_linker_version</strong><br />
+링커의 메이저 버전</p>
+<p><strong>minor_linker_version</strong><br />
+링커의 마이너 버전</p>
+<p><strong>size_of_code</strong><br />
+모든 코드 섹션(.text)의 총 크기</p>
+<p><strong>size_of_initialized_data</strong><br />
+초기화된 데이터 섹션들의 총 크기<br />
+즉, 코드 섹션을 제외한 데이터 섹션들의 총 크기</p>
+<p><strong>size_of_uninitialized_data</strong><br />
+초기화되지 않은 데이터 섹션(.bss)들의 총 크기<br />
+즉, 초기화되지 않은 데이터 섹션들의 총 크기</p>
+<p><strong>address_of_entry_point</strong><br />
+프로그램 실행 시작 주소 (RVA: Relative Virtual Address)<br />
+실제로 프로그램 실행 시작 주소는 파일 오프셋이 아니라 RVA로 저장된다.<br />
+(image_base + address_of_entry_point)</p>
+<p><strong>base_of_code</strong><br />
+첫번째 코드 섹션의 시작 RVA (64비트에서는 이 필드가 없음)<br />
+(image_base + base_of_code)</p>
+<p><strong>base_of_data</strong><br />
+첫번째 데이터 섹션의 시작 RVA (64비트에서는 이 필드가 없음)<br />
+(image_base + base_of_data)</p>
+<p><strong>image_base</strong><br />
+메모리에 로드될 때의 권장 시작 가상 주소</p>
+<p>보통 실행 파일은 0x400000 에서, 라이브러리(dll)은 0x10000000 에서 시작한다. 다만, 라이브러리의 경우 이미 점유된 상태라면 재배치가 된다.<br />
+재배치가 발생하면, DLL 내부의 주소 참조들을 실제 로드된 주소에 맞게 수정하는 작업이 추가로 필요하기 때문에 약간의 성능 저하가 발생할 수 있다.</p>
+<p>실행 파일(.exe)은 가상 메모리 공간에서 가장 먼저 자리를 잡기 때문에 일반적으로 재배치되지 않는다.</p>
+<p><strong>section_alignment</strong><br />
+메모리에서의 섹션 정렬 단위 (보통 4kb)</p>
+<p><strong>file_alignment</strong><br />
+파일에서의 섹션 정렬 단위 (보통 512 바이트)</p>
+<p><strong>size_of_image</strong><br />
+메모리에 로드된 전체 이미지의 크기<br />
+보통 다른 경우가 더 많다.</p>
+<p><strong>size_of_headers</strong><br />
+모든 헤더(DOS, PE, Section)를 합친 크기<br />
+<code>image_base</code>에서 <code>size_of_headers</code> 만큼 떨어진 곳에 첫번째 섹션이 위치한다.</p>
+<p><strong>data_directory</strong><br />
+데이터 디렉터리 배열<br />
+각 항목은 가상 주소와 size를 가지게 된다. 이 개념이 특히 중요한데, 데이터 디렉토리가 없다면, PE파일은 그냥 껍데기일 뿐이기 때문이다.</p>
+<p>인덱스 정보가 담긴 헤더 파일을 까보자.</p>
+<pre data-lang="h" style="background-color:#2b303b;color:#c0c5ce;" class="language-h "><code class="language-h" data-lang="h"><span style="color:#b48ead;">#define </span><span>IMAGE_DIRECTORY_ENTRY_EXPORT          </span><span style="color:#d08770;">0   </span><span style="color:#65737e;">// Export Directory
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_DIRECTORY_ENTRY_IMPORT          </span><span style="color:#d08770;">1   </span><span style="color:#65737e;">// Import Directory
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_DIRECTORY_ENTRY_RESOURCE        </span><span style="color:#d08770;">2   </span><span style="color:#65737e;">// Resource Directory
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_DIRECTORY_ENTRY_EXCEPTION       </span><span style="color:#d08770;">3   </span><span style="color:#65737e;">// Exception Directory
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_DIRECTORY_ENTRY_SECURITY        </span><span style="color:#d08770;">4   </span><span style="color:#65737e;">// Security Directory
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_DIRECTORY_ENTRY_BASERELOC       </span><span style="color:#d08770;">5   </span><span style="color:#65737e;">// Base Relocation Table
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_DIRECTORY_ENTRY_DEBUG           </span><span style="color:#d08770;">6   </span><span style="color:#65737e;">// Debug Directory
+</span><span style="color:#65737e;">//      IMAGE_DIRECTORY_ENTRY_COPYRIGHT       7   // (X86 usage)
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_DIRECTORY_ENTRY_ARCHITECTURE    </span><span style="color:#d08770;">7   </span><span style="color:#65737e;">// Architecture Specific Data
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_DIRECTORY_ENTRY_GLOBALPTR       </span><span style="color:#d08770;">8   </span><span style="color:#65737e;">// RVA of GP
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_DIRECTORY_ENTRY_TLS             </span><span style="color:#d08770;">9   </span><span style="color:#65737e;">// TLS Directory
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG    </span><span style="color:#d08770;">10   </span><span style="color:#65737e;">// Load Configuration Directory
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT   </span><span style="color:#d08770;">11   </span><span style="color:#65737e;">// Bound Import Directory in headers
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_DIRECTORY_ENTRY_IAT            </span><span style="color:#d08770;">12   </span><span style="color:#65737e;">// Import Address Table
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT   </span><span style="color:#d08770;">13   </span><span style="color:#65737e;">// Delay Load Import Descriptors
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR </span><span style="color:#d08770;">14   </span><span style="color:#65737e;">// COM Runtime descriptor
+</span></code></pre>
+<p>여기서 중요하게 봐야할 디렉토리는 <code>EXPORT</code>, <code>IMPORT</code>, <code>RESOURCE</code>, <code>TLS</code>, <code>LOAD_CONFIG</code>, <code>IAT</code> 이다.</p>
+<p>우선 <code>TLS(Thread-Local-Storage)</code>와 <code>LOAD_CONFIG</code>가 중요한데, 이는 런타임에 추가적인 정보를 제공하기 위해 사용된다.</p>
+<p><code>EXPORT</code> 디렉토리는 다른 프로그램에서 사용할 수 있도록 외부에 제공하는 함수(내보내는 함수)들의 목록이다.
+보통 DLL에서 많이 사용한다. (ffi)</p>
+<p><code>IMPORT</code> 디렉토리는 프로그램이 실행되기 위해 다른 DLL로부터 가져와야 하는 함수들의 목록이다.
+여기 메모리에 접근하면 <code>IMAGE_IMPORT_DESCRIPTOR</code> 배열이 시작되는 곳으로 이동한다.
+안에는 가져와야 할 DLL 별로 하나씩 <code>IMAGE_IMPORT_DESCRIPTOR</code> 구조체 배열이 있다.
+이 배열들의 마지막엔 <code>NULL Padding</code>이 들어가있다. 또한, 구조체 안에 <code>IAT</code> 내부의 포인터 주소가 있다.</p>
+<p>그래서 대충 동작을 살펴보면, 로더가 <code>IMPORT</code> 디렉토리로 가서, 모두 읽고 <code>CreateFileW</code> 같은걸로 로드한다. 그리고 그 주소를 <code>IAT(Import Address Table)</code>에 등록한다.</p>
+<p>바로 여기서 로드된 <code>IAT</code> 주소를 <code>IAT</code> 디렉토리에서 볼 수 있다.</p>
+<p>또한, 일반적으로 우리가 역공학 시 섹션 자체를 분석하려고 하는데, 이는 잘못됐다. 기본적으로 로더도 데이터 디렉토리를 읽지 않는다.</p>
+<p>섹션은 속이려면 얼마든지 속일 수 있다.</p>
+<h3 id="segsyeon-hedeo">섹션 헤더<a class="anchor" aria-hidden="true" href="#segsyeon-hedeo" hidden="">#</a>
+</h3>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#b48ead;">struct </span><span>ImageSectionHeader {
+</span><span>    </span><span style="color:#bf616a;">name</span><span>: [</span><span style="color:#b48ead;">u8</span><span>; 8],
+</span><span>    </span><span style="color:#bf616a;">virtual_size</span><span>: </span><span style="color:#b48ead;">u32</span><span>,
+</span><span>    </span><span style="color:#bf616a;">virtual_address</span><span>: </span><span style="color:#b48ead;">u32</span><span>,
+</span><span>    </span><span style="color:#bf616a;">size_of_raw_data</span><span>: </span><span style="color:#b48ead;">u32</span><span>,
+</span><span>    </span><span style="color:#bf616a;">pointer_to_raw_data</span><span>: </span><span style="color:#b48ead;">u32</span><span>,
+</span><span>    </span><span style="color:#bf616a;">pointer_to_relocations</span><span>: </span><span style="color:#b48ead;">u32</span><span>,
+</span><span>    </span><span style="color:#bf616a;">pointer_to_line_numbers</span><span>: </span><span style="color:#b48ead;">u32</span><span>,
+</span><span>    </span><span style="color:#bf616a;">number_of_relocations</span><span>: </span><span style="color:#b48ead;">u16</span><span>,
+</span><span>    </span><span style="color:#bf616a;">number_of_line_numbers</span><span>: </span><span style="color:#b48ead;">u16</span><span>,
+</span><span>    </span><span style="color:#bf616a;">characteristics</span><span>: </span><span style="color:#b48ead;">u32</span><span>,
+</span><span>}
+</span></code></pre>
+<p>위 내용에 섹션들이 저장된다. <code>.text.</code>든 <code>.data</code>든 모두 이 구조체에 저장된다.</p>
+<p><strong>name</strong><br />
+섹션 이름</p>
+<p>아래는 일반적인 섹션 리스트다.</p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>.text :
+</span><span>코드, 실행, 읽기 속성을 지니며 컴파일 후의 결과가 이곳에 저장된다. 즉, 이 섹션은 실행되는 코드들이 들어가는 섹션이다.
+</span><span>.data :
+</span><span>초기화, 읽기, 쓰기 속성을 지니며 초기화된 전역 변수를 가진다.
+</span><span>.rdata :
+</span><span>초기화, 읽기 속성을 지니며 문자열 상수나 const로 선언된 변수처럼 읽기만 가능한 읽기 전용 데이터 섹션이다.
+</span><span>.bss :
+</span><span>비초기화, 읽기, 쓰기 속성을 지니며 초기화되지 않은 전역 변수의 섹션이다.
+</span><span>.edata :
+</span><span>초기화, 읽기 속성을 지니며 EAT와 관련된 정보가 들어가 있는 섹션이다.
+</span><span>.idata :
+</span><span>초기화, 읽기, 쓰기 속성을 지니며 IAT와 관련된 정보가 들어가 있는 섹션이다.
+</span><span>.rsrc
+</span><span>초기화, 읽기 속성을 지니며 리소스가 저장되는 섹션이다.
+</span></code></pre>
+<p><strong>virtual_size</strong><br />
+섹션의 가상 크기</p>
+<p><strong>virtual_address</strong><br />
+섹션의 가상 주소</p>
+<p><strong>size_of_raw_data</strong><br />
+섹션의 실제 크기</p>
+<p><strong>pointer_to_raw_data</strong><br />
+섹션의 실제 데이터가 저장된 파일 오프셋</p>
+<p><strong>pointer_to_relocations</strong><br />
+섹션의 재배치 정보가 저장된 파일 오프셋</p>
+<p><strong>pointer_to_line_numbers</strong><br />
+섹션의 라인 넘버가 저장된 파일 오프셋</p>
+<p><strong>number_of_relocations</strong><br />
+섹션의 재배치 정보의 수</p>
+<p><strong>number_of_line_numbers</strong><br />
+섹션의 라인 넘버의 수</p>
+<p><strong>characteristics</strong><br />
+섹션의 속성을 나타내는 플래그 (e.g., 실행 가능한지.. 등등)</p>
+<p>헤더 파일을 까보자.</p>
+<pre data-lang="h" style="background-color:#2b303b;color:#c0c5ce;" class="language-h "><code class="language-h" data-lang="h"><span style="color:#65737e;">//      IMAGE_SCN_TYPE_REG                   0x00000000  // Reserved.
+</span><span style="color:#65737e;">//      IMAGE_SCN_TYPE_DSECT                 0x00000001  // Reserved.
+</span><span style="color:#65737e;">//      IMAGE_SCN_TYPE_NOLOAD                0x00000002  // Reserved.
+</span><span style="color:#65737e;">//      IMAGE_SCN_TYPE_GROUP                 0x00000004  // Reserved.
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_TYPE_NO_PAD                </span><span style="color:#d08770;">0x00000008  </span><span style="color:#65737e;">// Reserved.
+</span><span style="color:#65737e;">//      IMAGE_SCN_TYPE_COPY                  0x00000010  // Reserved.
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_CNT_CODE                   </span><span style="color:#d08770;">0x00000020  </span><span style="color:#65737e;">// Section contains code.
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_CNT_INITIALIZED_DATA       </span><span style="color:#d08770;">0x00000040  </span><span style="color:#65737e;">// Section contains initialized data.
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_CNT_UNINITIALIZED_DATA     </span><span style="color:#d08770;">0x00000080  </span><span style="color:#65737e;">// Section contains uninitialized data.
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_LNK_OTHER                  </span><span style="color:#d08770;">0x00000100  </span><span style="color:#65737e;">// Reserved.
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_LNK_INFO                   </span><span style="color:#d08770;">0x00000200  </span><span style="color:#65737e;">// Section contains comments or some other type of information.
+</span><span style="color:#65737e;">//      IMAGE_SCN_TYPE_OVER                  0x00000400  // Reserved.
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_LNK_REMOVE                 </span><span style="color:#d08770;">0x00000800  </span><span style="color:#65737e;">// Section contents will not become part of image.
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_LNK_COMDAT                 </span><span style="color:#d08770;">0x00001000  </span><span style="color:#65737e;">// Section contents comdat.
+</span><span style="color:#65737e;">//                                           0x00002000  // Reserved.
+</span><span style="color:#65737e;">//      IMAGE_SCN_MEM_PROTECTED - Obsolete   0x00004000
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_NO_DEFER_SPEC_EXC          </span><span style="color:#d08770;">0x00004000  </span><span style="color:#65737e;">// Reset speculative exceptions handling bits in the TLB entries for this section.
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_GPREL                      </span><span style="color:#d08770;">0x00008000  </span><span style="color:#65737e;">// Section content can be accessed relative to GP
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_MEM_FARDATA                </span><span style="color:#d08770;">0x00008000
+</span><span style="color:#65737e;">//      IMAGE_SCN_MEM_SYSHEAP  - Obsolete    0x00010000
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_MEM_PURGEABLE              </span><span style="color:#d08770;">0x00020000
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_MEM_16BIT                  </span><span style="color:#d08770;">0x00020000
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_MEM_LOCKED                 </span><span style="color:#d08770;">0x00040000
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_MEM_PRELOAD                </span><span style="color:#d08770;">0x00080000
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_ALIGN_1BYTES               </span><span style="color:#d08770;">0x00100000  </span><span style="color:#65737e;">//
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_ALIGN_2BYTES               </span><span style="color:#d08770;">0x00200000  </span><span style="color:#65737e;">//
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_ALIGN_4BYTES               </span><span style="color:#d08770;">0x00300000  </span><span style="color:#65737e;">//
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_ALIGN_8BYTES               </span><span style="color:#d08770;">0x00400000  </span><span style="color:#65737e;">//
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_ALIGN_16BYTES              </span><span style="color:#d08770;">0x00500000  </span><span style="color:#65737e;">// Default alignment if no others are specified.
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_ALIGN_32BYTES              </span><span style="color:#d08770;">0x00600000  </span><span style="color:#65737e;">//
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_ALIGN_64BYTES              </span><span style="color:#d08770;">0x00700000  </span><span style="color:#65737e;">//
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_ALIGN_128BYTES             </span><span style="color:#d08770;">0x00800000  </span><span style="color:#65737e;">//
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_ALIGN_256BYTES             </span><span style="color:#d08770;">0x00900000  </span><span style="color:#65737e;">//
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_ALIGN_512BYTES             </span><span style="color:#d08770;">0x00A00000  </span><span style="color:#65737e;">//
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_ALIGN_1024BYTES            </span><span style="color:#d08770;">0x00B00000  </span><span style="color:#65737e;">//
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_ALIGN_2048BYTES            </span><span style="color:#d08770;">0x00C00000  </span><span style="color:#65737e;">//
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_ALIGN_4096BYTES            </span><span style="color:#d08770;">0x00D00000  </span><span style="color:#65737e;">//
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_ALIGN_8192BYTES            </span><span style="color:#d08770;">0x00E00000  </span><span style="color:#65737e;">//
+</span><span style="color:#65737e;">// Unused                                    0x00F00000
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_ALIGN_MASK                 </span><span style="color:#d08770;">0x00F00000
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_LNK_NRELOC_OVFL            </span><span style="color:#d08770;">0x01000000  </span><span style="color:#65737e;">// Section contains extended relocations.
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_MEM_DISCARDABLE            </span><span style="color:#d08770;">0x02000000  </span><span style="color:#65737e;">// Section can be discarded.
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_MEM_NOT_CACHED             </span><span style="color:#d08770;">0x04000000  </span><span style="color:#65737e;">// Section is not cachable.
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_MEM_NOT_PAGED              </span><span style="color:#d08770;">0x08000000  </span><span style="color:#65737e;">// Section is not pageable.
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_MEM_SHARED                 </span><span style="color:#d08770;">0x10000000  </span><span style="color:#65737e;">// Section is shareable.
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_MEM_EXECUTE                </span><span style="color:#d08770;">0x20000000  </span><span style="color:#65737e;">// Section is executable.
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_MEM_READ                   </span><span style="color:#d08770;">0x40000000  </span><span style="color:#65737e;">// Section is readable.
+</span><span style="color:#b48ead;">#define </span><span>IMAGE_SCN_MEM_WRITE                  </span><span style="color:#d08770;">0x80000000  </span><span style="color:#65737e;">// Section is writeable.
+</span></code></pre>
+<p>여기에 권한 정보들이 있다. 그러니까, 섹션 이름이 뭐든 간에 이 플래그들로 대충 무슨 역할을 하는지 분석할 수 있다는 의미다.</p>
+<p>이것도 동일하게 비트 or 연산자로 권한 조합이 가능하다.</p>
+<h2 id="camjo">참조<a class="anchor" aria-hidden="true" href="#camjo" hidden="">#</a>
+</h2>
+<ul>
+<li><a href="https://ko.wikipedia.org/wiki/PE_%ED%8F%AC%EB%A7%B7">https://ko.wikipedia.org/wiki/PE_%ED%8F%AC%EB%A7%B7</a></li>
+<li><a href="https://jeongzero.oopy.io/ea359704-1d23-479f-96b0-ac4014c0cda5">https://jeongzero.oopy.io/ea359704-1d23-479f-96b0-ac4014c0cda5</a></li>
+</ul>
+
+  </div>
+  
+
+  <footer class="post-footer">
+      
+      <ul class="post-tags">
+          
+          
+          <li><a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;tags&#x2F;os&#x2F;">os</a></li>
+          
+          
+          <li><a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;tags&#x2F;windows&#x2F;">windows</a></li>
+          
+      </ul>
+      
+
+    
+    
+
+
+<nav class="paginav">
+    
+    <a class="prev" href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;posts&#x2F;2025-05-27-go-compile-time-variable-injection&#x2F;">
+        <span class="title">« Prev</span>
+        <br>
+        <span>Go의 Compile-Time Variable Injection</span>
+    </a>
+    
+    
+    <a class="next" href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;posts&#x2F;2025-07-11-dev-container&#x2F;">
+        <span class="title">Next »</span>
+        <br>
+        <span>devcontainer 도입기</span>
+    </a>
+    
+</nav>
+
+
+    
+  </footer>
+
+</article>
+
+    </main>
+    
+    <footer class="footer">
+    
+    <span>&copy; 2025 <a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;"></a></span>
+    
+    <span>
+        Powered by
+        <a href="https://www.getzola.org/" rel="noopener noreferrer" target="_blank">Zola</a> &
+        <a href="https://github.com/cydave/zola-theme-papermod" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+
+
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+
+
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+
+
+
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+
+
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerText = 'copy';
+        function copyingDone() {
+            copybutton.innerText = 'copied!';
+            setTimeout(() => {
+                copybutton.innerText = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                var content = codeblock.textContent;
+                if(codeblock.firstChild.tagName == 'TABLE') {
+                    content = Array(...codeblock.firstChild.getElementsByTagName('span')).map((span) => { return span.textContent; }).join('');
+                }
+                navigator.clipboard.writeText(content);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            // td containing LineNos
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            // table containing LineNos and code
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            // code blocks not having highlight as parent class
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+
+
+
+    
+</body>
+</html>
