@@ -7,7 +7,7 @@ description = "HD Wallet이 어떻게 동작하는지 알아봅시다."
 tags = ["crypto", "wallet"]
 +++
 
-![cold-wallet](../../static/images/cold-wallet.png)
+![cold-wallet](../../images/cold-wallet.png)
 
 흔히 Hot Wallet, HD Wallet라고 하면 대표적인 소프트웨어들이 많다. `Exodus`부터 시작해서 `MetaMask`까지.
 
@@ -102,5 +102,5 @@ m / purpose' / coin_type' / account' / change / address_index
 
 ## 참조
 
-- [https://github.com/bitcoin/bips](https://github.com/bitcoin/bips)
-- [https://walletrecoveryservice.com/ko/what-is-bip39/](https://walletrecoveryservice.com/ko/what-is-bip39/)
+- <https://github.com/bitcoin/bips>
+- <https://walletrecoveryservice.com/ko/what-is-bip39/>
