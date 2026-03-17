@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>CWLog - cs</title>
+    <subtitle>개발 &amp; 해킹 좋아하는 사람의 블로그</subtitle>
+    <link rel="self" type="application/atom+xml" href="https://wHoIsDReAmer.github.io/blog/tags/cs/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://wHoIsDReAmer.github.io/blog/"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2026-03-17T00:00:00+00:00</updated>
+    <id>https://wHoIsDReAmer.github.io/blog/tags/cs/atom.xml</id>
+    <entry xml:lang="en">
+        <title>거짓 공유(False Sharing)</title>
+        <published>2026-03-17T00:00:00+00:00</published>
+        <updated>2026-03-17T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://wHoIsDReAmer.github.io/blog/posts/2026-03-17-false-sharing/"/>
+        <id>https://wHoIsDReAmer.github.io/blog/posts/2026-03-17-false-sharing/</id>
+        
+        <content type="html" xml:base="https://wHoIsDReAmer.github.io/blog/posts/2026-03-17-false-sharing/">&lt;p&gt;거짓 공유는 동시성 프로그래밍을 하다보면 가끔 볼 수 있는 &lt;strong&gt;캐시 일관성 프로토콜&lt;&#x2F;strong&gt;과 관련된 문제다.&lt;&#x2F;p&gt;
+&lt;p&gt;CPU가 연산을 하려면 캐시라인을 메모리에서 들고 와야한다. 연산 시 캐시를 활용하기 때문이다.&lt;&#x2F;p&gt;
+&lt;p&gt;근데 캐시를 태울 때 단일 메모리 주소만 들고오면 캐시 미스가 매우 많이 발생한다 (구조체의 필드마다 매번 캐시를 태운다면..). 그래서 보통 메모리에서 벌크로 (보통 64바이트) 들고오는 편이다.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;kaesi-ilgwanseong-peurotokol&quot;&gt;캐시 일관성 프로토콜&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#kaesi-ilgwanseong-peurotokol&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;p&gt;캐시 일관성 프로토콜은 여러 스레드가 본인이 사용하고 있는 코어에서 공유되고 있는 변수를 동기화하는 방법론적인 프로토콜이다.&lt;&#x2F;p&gt;
+&lt;p&gt;현대 CPU들은 캐시 일관성 프로토콜로 MESI 프로토콜을 사용하는데, MESI는 각 캐시라인의 상태를 표현하는데 사용된다.&lt;&#x2F;p&gt;
+&lt;p&gt;약자인데, 다음과 같은 뜻을 가진다:&lt;&#x2F;p&gt;
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th style=&quot;text-align: left&quot;&gt;상태&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: left&quot;&gt;명칭&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: left&quot;&gt;데이터 일치 여부&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: left&quot;&gt;핵심 요약&lt;&#x2F;th&gt;&lt;&#x2F;tr&gt;&lt;&#x2F;thead&gt;&lt;tbody&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;strong&gt;M&lt;&#x2F;strong&gt;&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;strong&gt;Modified&lt;&#x2F;strong&gt;&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;메모리와 &lt;strong&gt;다름&lt;&#x2F;strong&gt;&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;해당 코어만 수정된 최신본 보유, 메모리 업데이트 필요.&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;strong&gt;E&lt;&#x2F;strong&gt;&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;strong&gt;Exclusive&lt;&#x2F;strong&gt;&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;메모리와 &lt;strong&gt;같음&lt;&#x2F;strong&gt;&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;해당 코어만 보유. 수정 시 즉시 &lt;strong&gt;M&lt;&#x2F;strong&gt; 상태로 전환 가능.&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;strong&gt;S&lt;&#x2F;strong&gt;&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;strong&gt;Shared&lt;&#x2F;strong&gt;&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;메모리와 &lt;strong&gt;같음&lt;&#x2F;strong&gt;&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;여러 코어가 공유 중. 수정 시 타 코어에 &lt;strong&gt;I&lt;&#x2F;strong&gt; 상태 전파&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;strong&gt;I&lt;&#x2F;strong&gt;&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;strong&gt;Invalid&lt;&#x2F;strong&gt;&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;&lt;strong&gt;사용 불가&lt;&#x2F;strong&gt;&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;타 코어의 수정으로 데이터 오염됨. 재사용 시 메모리에서 다시 읽기 필요.&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;&#x2F;tbody&gt;&lt;&#x2F;table&gt;
+&lt;p&gt;위와 같은 규약을 정의한 게 바로 MESI 프로토콜이다. 세부적인 구현 차이는 있다. 인텔은 저기다가 Forward인가 하는 상태를 끼워넣었고, AMD는 Owned인가 하는 상태를 넣어뒀다.&lt;&#x2F;p&gt;
+&lt;p&gt;당연히 각 코어별로 통신하는 방식은 버스를 통해 통신한다. 그래서 해당 버스의 트래픽을 줄이는 게 요건이다.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;geojis-gongyu-false-sharing&quot;&gt;거짓 공유 (False Sharing)&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#geojis-gongyu-false-sharing&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;p&gt;어쨌든, 본론으로 돌아와서 거짓 공유는 바로 저 캐시 일관성 프로토콜 때문에 발생한다.&lt;&#x2F;p&gt;
+&lt;p&gt;예를 들어보자.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;use &lt;&#x2F;span&gt;&lt;span&gt;std::sync::atomic::{AtomicUsize, Ordering};
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;use &lt;&#x2F;span&gt;&lt;span&gt;std::thread;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;use &lt;&#x2F;span&gt;&lt;span&gt;std::time::Instant;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;main&lt;&#x2F;span&gt;&lt;span&gt;() {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; a = AtomicUsize::new(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;);
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; b = AtomicUsize::new(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;);
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; loop_count = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;100_000_000&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;usize&lt;&#x2F;span&gt;&lt;span&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; start = Instant::now();
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    thread::scope(|&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;s&lt;&#x2F;span&gt;&lt;span&gt;| {
+&lt;&#x2F;span&gt;&lt;span&gt;        s.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;spawn&lt;&#x2F;span&gt;&lt;span&gt;(|| {
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;for &lt;&#x2F;span&gt;&lt;span&gt;_ in &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;..loop_count {
+&lt;&#x2F;span&gt;&lt;span&gt;                a.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;fetch_add&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span&gt;, Ordering::Relaxed);
+&lt;&#x2F;span&gt;&lt;span&gt;            }
+&lt;&#x2F;span&gt;&lt;span&gt;        });
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;        s.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;spawn&lt;&#x2F;span&gt;&lt;span&gt;(|| {
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;for &lt;&#x2F;span&gt;&lt;span&gt;_ in &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;..loop_count {
+&lt;&#x2F;span&gt;&lt;span&gt;                b.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;fetch_add&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span&gt;, Ordering::Relaxed);
+&lt;&#x2F;span&gt;&lt;span&gt;            }
+&lt;&#x2F;span&gt;&lt;span&gt;        });
+&lt;&#x2F;span&gt;&lt;span&gt;    });
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    println!(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Elapsed time: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;{:?}&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, start.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;elapsed&lt;&#x2F;span&gt;&lt;span&gt;());
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;std::thread::scope&lt;&#x2F;code&gt;는 &lt;code&gt;spawn&lt;&#x2F;code&gt;이랑 다르게 해당 블록이 끝나기 전에 모두 종료되는 게 보장된다. 즉, 스택 메모리 참조가 허용된다.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;위 코드를 실행해보면 다음과 같은 결과가 나온다.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;..&#x2F;..&#x2F;images&#x2F;false-share-1.png&quot; alt=&quot;false-share-1&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Atomic 연산이 아무리 느리다고 해도 0.8초면 매우 느린 결과다. 만약 캐시라인을 다르게 태우려고 중간에 패딩을 넣는다면 어떻게 될까?&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;use &lt;&#x2F;span&gt;&lt;span&gt;std::sync::atomic::{AtomicUsize, Ordering};
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;use &lt;&#x2F;span&gt;&lt;span&gt;std::thread;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;use &lt;&#x2F;span&gt;&lt;span&gt;std::time::Instant;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;#[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;derive&lt;&#x2F;span&gt;&lt;span&gt;(Debug)]
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;Foo {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;_f&lt;&#x2F;span&gt;&lt;span&gt;: [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u8&lt;&#x2F;span&gt;&lt;span&gt;;64]
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;main&lt;&#x2F;span&gt;&lt;span&gt;() {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; a = AtomicUsize::new(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;);
+&lt;&#x2F;span&gt;&lt;span&gt;    
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; padding = Foo { _f: [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span&gt;;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;64&lt;&#x2F;span&gt;&lt;span&gt;] };
+&lt;&#x2F;span&gt;&lt;span&gt;    
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; b = AtomicUsize::new(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;);
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; loop_count = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;100_000_000&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;usize&lt;&#x2F;span&gt;&lt;span&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; start = Instant::now();
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    thread::scope(|&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;s&lt;&#x2F;span&gt;&lt;span&gt;| {
+&lt;&#x2F;span&gt;&lt;span&gt;        s.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;spawn&lt;&#x2F;span&gt;&lt;span&gt;(|| {
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;for &lt;&#x2F;span&gt;&lt;span&gt;_ in &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;..loop_count {
+&lt;&#x2F;span&gt;&lt;span&gt;                a.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;fetch_add&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span&gt;, Ordering::Relaxed);
+&lt;&#x2F;span&gt;&lt;span&gt;            }
+&lt;&#x2F;span&gt;&lt;span&gt;        });
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;        s.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;spawn&lt;&#x2F;span&gt;&lt;span&gt;(|| {
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;for &lt;&#x2F;span&gt;&lt;span&gt;_ in &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;..loop_count {
+&lt;&#x2F;span&gt;&lt;span&gt;                b.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;fetch_add&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span&gt;, Ordering::Relaxed);
+&lt;&#x2F;span&gt;&lt;span&gt;            }
+&lt;&#x2F;span&gt;&lt;span&gt;        });
+&lt;&#x2F;span&gt;&lt;span&gt;    });
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 각 스택 주소 시작점을 알아보기
+&lt;&#x2F;span&gt;&lt;span&gt;    println!(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Address of a:       &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;{:p}&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, &amp;amp;a);
+&lt;&#x2F;span&gt;&lt;span&gt;    println!(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Address of padding: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;{:p}&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, &amp;amp;padding._f);
+&lt;&#x2F;span&gt;&lt;span&gt;    println!(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Address of b:       &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;{:p}&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, &amp;amp;b);
+&lt;&#x2F;span&gt;&lt;span&gt;    println!(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Elapsed time: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;{:?}&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, start.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;elapsed&lt;&#x2F;span&gt;&lt;span&gt;());
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;결과는 다음과 같다.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;..&#x2F;..&#x2F;images&#x2F;false-share-2.png&quot; alt=&quot;false-share-2&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;4배 가까이 줄어든 게 관측된다. 두 변수가 다른 캐시라인을 탄 것이다. 추가 출력을 넣어뒀는데 변수 a와 b의 차이는 0x88이다.&lt;&#x2F;p&gt;
+&lt;p&gt;또한, 캐시라인은 캡처된 변수의 시작점부터 태우는 게 아닌 64바이트 기준으로 쭉 깔려있기 때문에 운이 좋으면 &lt;strong&gt;캐시라인이 달라질 수 있다!&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;이게 무슨 말이냐면, 예를 들어서&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Cache Line 0: 0x00 ~ 0x3F (0 ~ 63)&lt;&#x2F;li&gt;
+&lt;li&gt;Cache Line 1: 0x40 ~ 0x7F (64 ~ 127)&lt;&#x2F;li&gt;
+&lt;li&gt;Cache Line 2: 0x80 ~ 0xBF (128 ~ 191)&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;이런식으로 캐시라인이 있다고 하자. 근데 만약에 a가 0x38(1번 캐시라인 끝자락), 변수 b가 0x40(2번 캐시라인 시작점)에 있다고 가정한다면 &lt;strong&gt;변수 a와 변수 b의 물리적 거리는 8바이트 차이가 나지만 하드웨어적으로 캐시라인이 달라서 각 스레드에서 아무리 치고 박고 해도 서로에게 영향이 가지 않는다.&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;haegyeol&quot;&gt;해결&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#haegyeol&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;p&gt;보통 저런식으로 스택 메모리에서 마주하긴 힘들다. 대부분 구조체에서 거짓 공유를 마주하게 될텐데, 뭐 원리는 동일하다. 인접한 변수 두개가 서로 다른 코어에 들어가면 성능 저하가 일어날 수도 있다.&lt;&#x2F;p&gt;
+&lt;p&gt;그래서 Rust같은 경우는 repr (메모리 레이아웃 커스텀) 매크로에 align 옵션을 제공해준다.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span&gt;#[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;repr&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;align&lt;&#x2F;span&gt;&lt;span&gt;(64))]
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;Foo {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;a&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;i32&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;    b; i32
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;이러면 각 필드들 사이에 64바이트 패딩이 생긴다.&lt;&#x2F;p&gt;
+&lt;p&gt;Go는 어떨까. Go는 철학이 무식해서 그런거 제공 안해준다. 그래서 사용자가 직접 넣어줘야 한다.&lt;&#x2F;p&gt;
+&lt;p&gt;이런식으로..&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;type &lt;&#x2F;span&gt;&lt;span&gt;Foo &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;a &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;uint64
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;_ &lt;&#x2F;span&gt;&lt;span&gt;[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;64&lt;&#x2F;span&gt;&lt;span&gt;]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;byte
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;b &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;uint64
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;근데 Go 진영에서도 하드코드하는 건 좀 아니라고 생각했는지 패키지를 제공해주긴 한다.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;import &lt;&#x2F;span&gt;&lt;span&gt;(
+&lt;&#x2F;span&gt;&lt;span&gt;    &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;sync&#x2F;atomic&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;    &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;golang.org&#x2F;x&#x2F;sys&#x2F;cpu&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;type &lt;&#x2F;span&gt;&lt;span&gt;Bar &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;a &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;uint64
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;_ cpu&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;CacheLinePad
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;b &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;uint64
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;이러면 아키텍처에 맞는 캐시라인 패딩을 알아서 넣어준다.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;참조&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;https:&#x2F;&#x2F;ko.wikipedia.org&#x2F;wiki&#x2F;%EA%B1%B0%EC%A7%93_%EA%B3%B5%EC%9C%A0&lt;&#x2F;li&gt;
+&lt;li&gt;https:&#x2F;&#x2F;dev.to&#x2F;kelvinfloresta&#x2F;false-sharing-in-go-the-hidden-enemy-in-your-concurrency-37ni&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>SOA와 AOS</title>
+        <published>2025-08-06T00:00:00+00:00</published>
+        <updated>2025-08-06T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://wHoIsDReAmer.github.io/blog/posts/2025-08-06-soa-aos/"/>
+        <id>https://wHoIsDReAmer.github.io/blog/posts/2025-08-06-soa-aos/</id>
+        
+        <content type="html" xml:base="https://wHoIsDReAmer.github.io/blog/posts/2025-08-06-soa-aos/">&lt;p&gt;근래에 LLM이 떠오르며 SIMD 연산이 중요해지고 그에 따라 자연스럽게 데이터를 다루는 레이아웃을 고민하게 되었다. 여기엔 세가지가 있는데&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;SoA(Structure of Arrays)&lt;&#x2F;li&gt;
+&lt;li&gt;AoS(Array of Structures)&lt;&#x2F;li&gt;
+&lt;li&gt;AoSoA(Array of Structures of Arrays)&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;각각의 레이아웃 장단점이 뭘까?&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;soa-structure-of-arrays&quot;&gt;SoA (Structure of Arrays)&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#soa-structure-of-arrays&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;p&gt;SoA는 구조체 안에 배열을 담는 방식이다. 예를 들어, 다음과 같은 구조체가 있다고 하자.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const&lt;&#x2F;span&gt;&lt;span&gt; N: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;usize &lt;&#x2F;span&gt;&lt;span&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;100&lt;&#x2F;span&gt;&lt;span&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;Person {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;age&lt;&#x2F;span&gt;&lt;span&gt;: [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;i32&lt;&#x2F;span&gt;&lt;span&gt;; N],
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;height&lt;&#x2F;span&gt;&lt;span&gt;: [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f32&lt;&#x2F;span&gt;&lt;span&gt;; N],
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;이 방식은 다음과 같은 상황일 때 이점이 크다.&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;SIMD 연산이 필요할 때 (벡터 집약 연산이 필요할 떄)&lt;&#x2F;li&gt;
+&lt;li&gt;모든 데이터를 업데이트할 때 (CPU 캐시 히트율이 올라감)&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;단점도 있다.&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;구조체 단위 접근 시 불리 (캐시 히트율이 떨어짐)&lt;&#x2F;li&gt;
+&lt;li&gt;가독성 저하 (코드 관리 및 데이터 관리가 어려움)&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;특수한 유즈케이스가 아니면 잘 쓰지 않는다.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;aos-array-of-structures&quot;&gt;AoS (Array of Structures)&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#aos-array-of-structures&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;p&gt;AoS는 구조체를 배열로 만드는 레이아웃 방법이다. 흔히 일반적인 개발자라면 많이 볼 수 있는 방법이다.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;Person {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;age&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;i32&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;height&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f32&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; people: Vec&amp;lt;Person&amp;gt; = vec![
+&lt;&#x2F;span&gt;&lt;span&gt;    Person { age: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;20&lt;&#x2F;span&gt;&lt;span&gt;, height: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;170.0 &lt;&#x2F;span&gt;&lt;span&gt;},
+&lt;&#x2F;span&gt;&lt;span&gt;    Person { age: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;21&lt;&#x2F;span&gt;&lt;span&gt;, height: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;175.0 &lt;&#x2F;span&gt;&lt;span&gt;},
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; ...
+&lt;&#x2F;span&gt;&lt;span&gt;];
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;이 방식은 각각의 구조체에 접근할 때 효율이 좋다.&lt;&#x2F;p&gt;
+&lt;p&gt;다만, 한번에 대량의 데이터에 접근하려면 모든 구조체에 접근해야 하기 떄문에 비효율적이다.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;aosoa-array-of-structures-of-arrays&quot;&gt;AoSoA (Array of Structures of Arrays)&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#aosoa-array-of-structures-of-arrays&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h1&gt;
+&lt;p&gt;이건 위 두 방식의 장점을 합쳐 &lt;code&gt;SIMD&lt;&#x2F;code&gt; 연산에 특화된 설계 방식이다.&lt;&#x2F;p&gt;
+&lt;p&gt;간단한데, SoA 방식을 사용하고 그걸 다시 AoS 방식으로 묶는 방법이다.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;PersonBlock {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;age&lt;&#x2F;span&gt;&lt;span&gt;: [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;i32&lt;&#x2F;span&gt;&lt;span&gt;; 8],
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;height&lt;&#x2F;span&gt;&lt;span&gt;: [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f32&lt;&#x2F;span&gt;&lt;span&gt;; 8],
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; people: Vec&amp;lt;PersonBlock&amp;gt; = vec![
+&lt;&#x2F;span&gt;&lt;span&gt;    PersonBlock {
+&lt;&#x2F;span&gt;&lt;span&gt;        age: [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;20&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;21&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;22&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;23&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;24&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;25&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;26&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;27&lt;&#x2F;span&gt;&lt;span&gt;],
+&lt;&#x2F;span&gt;&lt;span&gt;        height: [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;170.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;175.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;180.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;185.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;190.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;195.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;200.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;205.0&lt;&#x2F;span&gt;&lt;span&gt;],
+&lt;&#x2F;span&gt;&lt;span&gt;    },
+&lt;&#x2F;span&gt;&lt;span&gt;    PersonBlock {
+&lt;&#x2F;span&gt;&lt;span&gt;        age: [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;28&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;29&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;30&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;31&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;32&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;33&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;34&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;35&lt;&#x2F;span&gt;&lt;span&gt;],
+&lt;&#x2F;span&gt;&lt;span&gt;        height: [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;210.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;215.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;220.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;225.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;230.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;235.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;240.0&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;245.0&lt;&#x2F;span&gt;&lt;span&gt;],
+&lt;&#x2F;span&gt;&lt;span&gt;    },
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; ...
+&lt;&#x2F;span&gt;&lt;span&gt;];
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;이렇게 하면 한번에 8개(256비트, SIMD 연산에 최적화됨)의 데이터에 접근할 수 있고, 모든 데이터를 업데이트할 때도 효율적이다.&lt;&#x2F;p&gt;
+&lt;p&gt;또한 SoA 로 설계된 데이터에선 SIMD 연산을 할 때 직접 오프셋과 끝을 정해줘야 했는데, AoSoA 방식에서는 블록 단위로 자연스럽게 SIMD 연산이 가능하다는 장점이 있다.&lt;&#x2F;p&gt;
+&lt;p&gt;이제 대충 물리 시뮬레이터를 만들어서 벤치마킹을 해보자.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# AoS 모든 위치 업데이트 벤치마크
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;AoS&lt;&#x2F;span&gt;&lt;span&gt; update positions    time:   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;2.8440 ms 2.8596 ms 2.8775 ms&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;change: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;−2.5705% −1.7786% −0.9646%&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]&lt;&#x2F;span&gt;&lt;span&gt; (p = 0.00 &amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;.05)
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Change&lt;&#x2F;span&gt;&lt;span&gt; within noise threshold.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Found&lt;&#x2F;span&gt;&lt;span&gt; 10 outliers among 100 measurements (10.00%)
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;6&lt;&#x2F;span&gt;&lt;span&gt; (6.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; mild
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;4&lt;&#x2F;span&gt;&lt;span&gt; (4.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; severe
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Benchmarking&lt;&#x2F;span&gt;&lt;span&gt; SoA update positions: Warming up for 3.0000 s
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Warning:&lt;&#x2F;span&gt;&lt;span&gt; Unable to complete 100 samples in 5.0s. You may wish to increase target time to 6.8s, enable flat sampling, or reduce sample count to 60.
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# SoA 모든 위치 업데이트 벤치마크
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;SoA&lt;&#x2F;span&gt;&lt;span&gt; update positions    time:   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;1.3333 ms 1.3451 ms 1.3598 ms&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;change: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;−2.3746% −1.1937% −0.0467%&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]&lt;&#x2F;span&gt;&lt;span&gt; (p = 0.05 &amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;.05)
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;No&lt;&#x2F;span&gt;&lt;span&gt; change in performance detected.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Found&lt;&#x2F;span&gt;&lt;span&gt; 12 outliers among 100 measurements (12.00%)
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;5&lt;&#x2F;span&gt;&lt;span&gt; (5.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; mild
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;7&lt;&#x2F;span&gt;&lt;span&gt; (7.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; severe
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# AoSoA 모든 위치 업데이트 벤치마크
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;AoSoA&lt;&#x2F;span&gt;&lt;span&gt; update positions  time:   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;2.7560 ms 2.7724 ms 2.7909 ms&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;change: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;−1.3765% −0.5173% +0.4083%&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]&lt;&#x2F;span&gt;&lt;span&gt; (p = 0.26 &amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;.05)
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;No&lt;&#x2F;span&gt;&lt;span&gt; change in performance detected.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Found&lt;&#x2F;span&gt;&lt;span&gt; 14 outliers among 100 measurements (14.00%)
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;8&lt;&#x2F;span&gt;&lt;span&gt; (8.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; mild
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;6&lt;&#x2F;span&gt;&lt;span&gt; (6.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; severe
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# ------------------------------------------------------------
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# AoS 운동 에너지 계산 벤치마크
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;AoS&lt;&#x2F;span&gt;&lt;span&gt; kinetic energy      time:   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;2.3260 ms 2.3430 ms 2.3620 ms&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;change: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;−3.2449% −2.0336% −0.9182%&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]&lt;&#x2F;span&gt;&lt;span&gt; (p = 0.00 &amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;.05)
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Change&lt;&#x2F;span&gt;&lt;span&gt; within noise threshold.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Found&lt;&#x2F;span&gt;&lt;span&gt; 11 outliers among 100 measurements (11.00%)
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;6&lt;&#x2F;span&gt;&lt;span&gt; (6.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; mild
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;5&lt;&#x2F;span&gt;&lt;span&gt; (5.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; severe
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Benchmarking&lt;&#x2F;span&gt;&lt;span&gt; SoA kinetic energy: Warming up for 3.0000 s
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Warning:&lt;&#x2F;span&gt;&lt;span&gt; Unable to complete 100 samples in 5.0s. You may wish to increase target time to 6.6s, enable flat sampling, or reduce sample count to 60.
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# SoA 운동 에너지 계산 벤치마크
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;SoA&lt;&#x2F;span&gt;&lt;span&gt; kinetic energy      time:   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;1.3045 ms 1.3221 ms 1.3428 ms&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;change: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;−1.5365% −0.4294% +0.7775%&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]&lt;&#x2F;span&gt;&lt;span&gt; (p = 0.46 &amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;.05)
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;No&lt;&#x2F;span&gt;&lt;span&gt; change in performance detected.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Found&lt;&#x2F;span&gt;&lt;span&gt; 6 outliers among 100 measurements (6.00%)
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;4&lt;&#x2F;span&gt;&lt;span&gt; (4.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; mild
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;2&lt;&#x2F;span&gt;&lt;span&gt; (2.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; severe
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# AoSoA 운동 에너지 계산 벤치마크
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;AoSoA&lt;&#x2F;span&gt;&lt;span&gt; kinetic energy    time:   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;2.3083 ms 2.3286 ms 2.3521 ms&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;change: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;−2.5771% −1.3791% −0.1421%&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]&lt;&#x2F;span&gt;&lt;span&gt; (p = 0.02 &amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;.05)
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Change&lt;&#x2F;span&gt;&lt;span&gt; within noise threshold.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Found&lt;&#x2F;span&gt;&lt;span&gt; 11 outliers among 100 measurements (11.00%)
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;3&lt;&#x2F;span&gt;&lt;span&gt; (3.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; mild
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;8&lt;&#x2F;span&gt;&lt;span&gt; (8.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; severe
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Benchmarking&lt;&#x2F;span&gt;&lt;span&gt; AoS sum x coordinates: Warming up for 3.0000 s
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Warning:&lt;&#x2F;span&gt;&lt;span&gt; Unable to complete 100 samples in 5.0s. You may wish to increase target time to 9.1s, enable flat sampling, or reduce sample count to 50.
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# AoS x 좌표 합 벤치마크
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;AoS&lt;&#x2F;span&gt;&lt;span&gt; sum x coordinates   time:   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;1.8064 ms 1.8162 ms 1.8274 ms&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;change: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;−1.9885% −1.1965% −0.3979%&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]&lt;&#x2F;span&gt;&lt;span&gt; (p = 0.00 &amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;.05)
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Change&lt;&#x2F;span&gt;&lt;span&gt; within noise threshold.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Found&lt;&#x2F;span&gt;&lt;span&gt; 11 outliers among 100 measurements (11.00%)
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;7&lt;&#x2F;span&gt;&lt;span&gt; (7.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; mild
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;4&lt;&#x2F;span&gt;&lt;span&gt; (4.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; severe
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# SoA x 좌표 합 벤치마크
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;SoA&lt;&#x2F;span&gt;&lt;span&gt; sum x coordinates   time:   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;928.80 µs 937.06 µs 946.70 µs&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;change: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;−2.9895% −1.8426% −0.6016%&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]&lt;&#x2F;span&gt;&lt;span&gt; (p = 0.00 &amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;.05)
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Change&lt;&#x2F;span&gt;&lt;span&gt; within noise threshold.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Found&lt;&#x2F;span&gt;&lt;span&gt; 5 outliers among 100 measurements (5.00%)
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;5&lt;&#x2F;span&gt;&lt;span&gt; (5.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; mild
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Benchmarking&lt;&#x2F;span&gt;&lt;span&gt; AoSoA sum x coordinates: Warming up for 3.0000 s
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Warning:&lt;&#x2F;span&gt;&lt;span&gt; Unable to complete 100 samples in 5.0s. You may wish to increase target time to 8.8s, enable flat sampling, or reduce sample count to 50.
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# AoSoA x 좌표 합 벤치마크
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;AoSoA&lt;&#x2F;span&gt;&lt;span&gt; sum x coordinates time:   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;1.7468 ms 1.7510 ms 1.7559 ms&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;change: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;−1.6810% −0.9152% −0.1729%&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]&lt;&#x2F;span&gt;&lt;span&gt; (p = 0.02 &amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;.05)
+&lt;&#x2F;span&gt;&lt;span&gt;                        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Change&lt;&#x2F;span&gt;&lt;span&gt; within noise threshold.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Found&lt;&#x2F;span&gt;&lt;span&gt; 12 outliers among 100 measurements (12.00%)
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;5&lt;&#x2F;span&gt;&lt;span&gt; (5.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; mild
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;7&lt;&#x2F;span&gt;&lt;span&gt; (7.00%) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;high&lt;&#x2F;span&gt;&lt;span&gt; severe
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;결과를 보면 전반적으로 SoA -&amp;gt; AoSoA -&amp;gt; AoS 순으로 성능이 좋다.
+벤치마크 코드는 &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;wHoIsDReAmer&#x2F;blog&#x2F;tree&#x2F;main&#x2F;tests&#x2F;soa-aos&quot;&gt;블로그 깃헙&lt;&#x2F;a&gt;에서 확인할 수 있다.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;참조&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;AoS_and_SoA&quot;&gt;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;AoS_and_SoA&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>코루틴이란?</title>
+        <published>2025-05-09T00:00:00+00:00</published>
+        <updated>2025-05-09T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://wHoIsDReAmer.github.io/blog/posts/2025-05-09-what-is-the-coroutine/"/>
+        <id>https://wHoIsDReAmer.github.io/blog/posts/2025-05-09-what-is-the-coroutine/</id>
+        
+        <content type="html" xml:base="https://wHoIsDReAmer.github.io/blog/posts/2025-05-09-what-is-the-coroutine/">&lt;h2 id=&quot;korutin&quot;&gt;코루틴&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#korutin&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;p&gt;흔히 코틀린을 사용할 때 자주 만날 수 있는 단어인 코루틴, 깊게 알아보자.&lt;&#x2F;p&gt;
+&lt;p&gt;코루틴이란 Co (ooperation 협동) + routine (루틴) 단어가 합쳐져 생긴 개념이다.&lt;&#x2F;p&gt;
+&lt;p&gt;스레드처럼 백그라운드 작업을 위임할 때 많이 사용되는데, 이는 코틀린 뿐만 아니라 여러 언어에서도 통용된다. (Rust 비동기 모델, Go 등등..) 결국 코루틴은 하나의 비동기 프로그래밍을 위한 추상화 도구이기 때문이다.&lt;&#x2F;p&gt;
+&lt;p&gt;코루틴이 어떻게 구현되는지 살펴보자. 일반적으로 코루틴은 내부적으로 상태 머신(state machine)을 사용한다.&lt;&#x2F;p&gt;
+&lt;p&gt;상태 머신이란 여러 상태(state)를 가지고 있으며, 특정 조건에 따라 상태 간 전환이 이루어지는 시스템을 뜻한다. 코루틴은 실행 중에 여러 상태를 거치며, 각 상태에서 일시 중단되고 다시 시작될 수 있다.&lt;&#x2F;p&gt;
+&lt;p&gt;그럼 이 상태 머신은 구체적으로 어떻게 구현될까? 코루틴을 지원하는 언어의 컴파일러는 우리가 작성한 코드를 분석하고 변환하여 내부적으로 상태 머신을 만들어낸다. 예를 들어, 코틀린에서 &lt;code&gt;suspend&lt;&#x2F;code&gt; 키워드가 붙은 함수나 C#의 &lt;code&gt;async&#x2F;await&lt;&#x2F;code&gt; 구문을 사용하면, 컴파일러는 이 함수들을 여러 조각으로 나누고 각 중단 가능 지점(suspension point)을 기준으로 상태를 관리하는 코드를 생성한다.&lt;&#x2F;p&gt;
+&lt;p&gt;코루틴이 일시 중단될 때, 컴파일러는 해당 시점의 **실행 컨텍스트(execution context)**를 저장하기 위한 메커니즘을 작동시킨다. 이 컨텍스트에는 다음 실행을 위해 필요한 모든 정보, 즉 &lt;strong&gt;지역 변수의 현재 값들, 명령어 포인터(다음에 실행할 코드의 주소), 그리고 현재 호출 스택의 일부 정보(필요한 경우)&lt;&#x2F;strong&gt; 등이 포함된다. 이런 정보들이 힙(heap) 메모리에 할당되는 &lt;strong&gt;&#x27;컨티뉴에이션 객체(Continuation Object)&#x27;&lt;&#x2F;strong&gt; 또는 이와 유사한 자료 구조에 패키징되어 저장된다.&lt;&#x2F;p&gt;
+&lt;p&gt;나중에 스케줄러(scheduler)에 의해 해당 코루틴이 다시 실행될 준비가 되면 이 저장된 컨티뉴에이션 객체가 활성화된다. 시스템은 이 객체로부터 지역 변수들을 복원하고, 명령어 포인터를 중단됐던 지점으로 정확히 되돌려 놓음으로써 코루틴이 실행을 재개할 수 있게 된다.&lt;&#x2F;p&gt;
+&lt;p&gt;상태 머신을 다루는 방법 중에 대표적으로 두가지 방법으로 나뉜다. 스택리스 코루틴과 스택풀 코루틴이다.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;seutaegriseu-korutin&quot;&gt;스택리스 코루틴&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#seutaegriseu-korutin&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;스택리스 코루틴은 상태를 저장함과 동시에 힙으로 변수 값과 실행 위치(몇 번째에서 중단되는지)이 저장된다. 스택을 사용하지 않기 때문에 상대적으로 컨텍스트 스위치 비용도 적고, 메모리 용량도 작아지고 효율적이다.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;seutaegpul-korutin&quot;&gt;스택풀 코루틴&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#seutaegpul-korutin&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;스택풀 코루틴은 상태를 저장할 때 스택째로 저장하는 방법이다. 용량도 더 들고, 재귀 함수에서 잘못 사용 시 스택오버플로우가 발생한다. 다만, 일반 함수랑 동일한 원리로 동작하기 때문에 디버깅이 편리하다는 장점이 있다.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;siseutem-kol&quot;&gt;시스템 콜&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#siseutem-kol&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;상태 머신은 일반적으로 시스템 콜(syscall)로 제어한다. 거의 코루틴의 핵심이라고 봐도 무방하다.&lt;&#x2F;p&gt;
+&lt;p&gt;애플리케이션에서 스레드를 사용하진 않지만, I&#x2F;O 작업이 발생하면 OS에 해당 작업 스레드를 위임한다. 그리고, 시스템 콜에 해당 작업이 완료되면 이벤트를 보내달라고 요청한다. 그리고 이벤트가 내려지기까지 기다린다. (상태 머신이 상태가 바뀔 때까지 기다림) 이벤트가 내려지면 해당 작업을 다시 재개하는 방식이다.&lt;&#x2F;p&gt;
+&lt;p&gt;다음은 운영체제별 메커니즘이다.&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;color:#c0c5ce;&quot;&gt;&lt;code&gt;&lt;span&gt;리눅스: epoll
+&lt;&#x2F;span&gt;&lt;span&gt;윈도우: IOCP
+&lt;&#x2F;span&gt;&lt;span&gt;BSD: kqueue
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;위와 같이 운영체제마다 조금씩 차이가 있지만 동일한 메커니즘으로 이벤트를 내려준다.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>
