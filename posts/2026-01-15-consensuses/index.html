@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+<head>
+    
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Consensus Engine (합의 엔진) 이해하기</title>
+
+
+<meta name="keywords" content="programming, hacking, security, coding, developer, develop">
+
+
+
+<meta name="description" content="Consensus Engine을 이해해봅시다.">
+
+
+
+
+
+<link rel="canonical" href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;posts&#x2F;2026-01-15-consensuses&#x2F;">
+
+
+<link rel="stylesheet" href="https://wHoIsDReAmer.github.io/blog/css/includes/scroll-bar.css">
+<link rel="stylesheet" href="https://wHoIsDReAmer.github.io/blog/css/styles.css">
+<link rel="stylesheet" href="https://wHoIsDReAmer.github.io/blog/css/override.css">
+
+
+
+
+
+
+
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+    </style>
+    
+</noscript>
+
+
+
+    
+</head>
+<body class=" dark" id="top">
+    
+    
+<script>
+    if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    }
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;" accesskey="h" title="CWLog (Alt + H)">
+                CWLog
+            </a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+                <ul class="lang-switch">
+                    <li></li>
+                </ul>
+            </div>
+        </div>
+        
+    </nav>
+</header>
+
+    
+    <main class="main">
+        
+<article class="post-single">
+  <header class="post-header">
+      <div class="breadcrumbs">
+          <a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;">Home</a>&nbsp;»&nbsp;
+          <a href="https://wHoIsDReAmer.github.io/blog/posts/">Posts</a>&nbsp;»&nbsp;
+          <a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;posts&#x2F;2026-01-15-consensuses&#x2F;">Consensus Engine (합의 엔진) 이해하기</a>
+      </div>
+      <h1 class="post-title">Consensus Engine (합의 엔진) 이해하기</h1>
+      
+      
+      <div class="post-description">
+          Consensus Engine을 이해해봅시다.
+      </div>
+      
+      
+      <div class="post-meta">
+      
+
+
+
+
+
+
+
+
+
+
+<span title="2026-01-15 00:00:00 +0000">2026-01-15</span>&nbsp;·&nbsp;
+
+      
+      </div>
+      
+  </header>
+
+  
+  
+
+<div class="toc">
+    <details  open>
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner">
+            <ul>
+                
+                <li>
+                    <a href="#bunsan-siseutem" aria-label="분산 시스템">분산 시스템</a>
+                    
+                    <ul>
+                    
+                        <li>
+                            <a href="#raft-habyi-algorijeum" aria-label="Raft 합의 알고리즘">Raft 합의 알고리즘</a>
+                            
+                        </li>
+                    
+                    </ul>
+                    
+                </li>
+                
+                <li>
+                    <a href="#bijantin-jangae-heoyong-algorijeum" aria-label="비잔틴 장애 허용 알고리즘">비잔틴 장애 허용 알고리즘</a>
+                    
+                </li>
+                
+            </ul>
+        </div>
+    </details>
+</div>
+
+
+  
+
+  
+  <div class="post-content">
+      <p>근래에 블록체인에 꽤 관심이 생겼다. 생태계를 쭉 둘러봤는데, 대략적으로 dApp이나 Consensus 엔진 정도가 눈에 먼저 보인 것 같다.</p>
+<p>차차 전반적으로 이해한 걸 바탕으로 글을 쓸 예정이다. 다만 우선 첫글은 가장 low-level 레이어인 합의 엔진 (Consensus Engine)을 이론이랑 구현체를 까보며 이해해보려고 한다.</p>
+<p>이런 게 왜 필요할까? 그리고 구현은 왜 그렇게 돼있을까? 이걸 알기 위해선 우선 분산 시스템을 이해할 필요가 있다.</p>
+<h2 id="bunsan-siseutem">분산 시스템<a class="anchor" aria-hidden="true" href="#bunsan-siseutem" hidden="">#</a>
+</h2>
+<p>일단 사전적인 정의로는, 여러 독립적인 노드(컴퓨터)들이 네트워크로 연결되어 하나의 공동 목표를 수행하기 위한 시스템이다.</p>
+<p>예를 들어..</p>
+<ul>
+<li>Redis에서 샤딩 기능을 이용해서 여러 노드가 연결되고 캐싱을 수행하면 분산 시스템이다. (장애 복구)</li>
+<li>인프라에서 de facto인 쿠버네티스같은 경우도 동일하다.</li>
+</ul>
+<p>결국 여러 노드가 <strong>동일한 순서의 로그를 통해 동일한 State</strong>를 갖게 만드는 것이 핵심이다. 이걸 학술적으로는 **상태 머신 전파(State Machine Replication)**라고 부른다.</p>
+<h3 id="raft-habyi-algorijeum">Raft 합의 알고리즘<a class="anchor" aria-hidden="true" href="#raft-habyi-algorijeum" hidden="">#</a>
+</h3>
+<p>대표적으로 흔히 사용되고 있는 것은 <code>Raft</code>다.</p>
+<p>쿠버네티스의 <code>etcd</code>에서 사용하고, <code>Redis</code>도 <code>Sentinel</code>이나 <code>Cluster</code>의 리더 선출 과정에서 <code>Raft-like</code>를 사용한다.</p>
+<p>함축적으로 플로우를 설명하자면 다음과 같다:</p>
+<ol>
+<li>리더가 없을 시 리더 투표를 한다.</li>
+<li>투표가 정족수, 즉 과반수가 넘으면 해당 노드를 리더로 승격시킨다.</li>
+<li>리더가 상태 전파를 담당한다.</li>
+<li>위 과정 반복</li>
+</ol>
+<p>이건 모든 노드들이 '착하다' 라는 전제이다. 만약 악의적인 노드가 있다고 하고, 해당 노드가 리더가 되면 잘못된 로그를 줘서 시스템을 붕괴시킬 수도 있다.</p>
+<p>위의 예시들은 내부 시스템에서 사용하고 있기 때문에 (물론 요새 Zero-Trust로 얼추 방어한다) 이런 경우가 많지 않겠지만, <strong>블록체인</strong>은 다르다. <strong>누구나</strong> 참여할 수 있기 때문에 악의적인 노드가 있을 확률이 존재한다.</p>
+<p>이를 해결하기 위해 고안된 것이 <strong>비잔틴 장애 허용(Byzantine Fault Tolerance, BFT)</strong> 알고리즘이다.</p>
+<h2 id="bijantin-jangae-heoyong-algorijeum">비잔틴 장애 허용 알고리즘<a class="anchor" aria-hidden="true" href="#bijantin-jangae-heoyong-algorijeum" hidden="">#</a>
+</h2>
+<p>알고리즘을 알기 전 배경적으로 알아야 할 딜레마적 개념이 있는데, <strong>비잔틴 장군 문제</strong>이다.</p>
+<p>배경은 이렇다:</p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>비잔틴 제국의 장군들이 적의 도시를 포위하고 있다.
+</span><span>
+</span><span>해당 전투에서 이기려면 양자택일을 해야한다: 모든 장군이 전부 공격하거나, 모든 장군이 전부 후퇴하거나
+</span><span>
+</span><span>현실적인 제약은 다음과 같다:
+</span><span>- 장군들끼리는 전령을 통해서만 소통 가능하다.
+</span><span>- 장군들 중에서 배신자가 몇몇 섞여있다. 예를 들어, 이런식으로: 몇몇 장군들에게는 후퇴하라고하고 몇몇 장군들에게는 공격하라고 한다.
+</span><span>
+</span><span>이 상황에서 어떻게 배신자들을 뚫고 승리할 수 있을까?
+</span></code></pre>
+<p>위 내용을 해결하기 위한 여러 합의 이론들이 존재한다. 크게 두가지로 나눌 수 있는데</p>
+<ul>
+<li>PoW: 연산력 기반 합의 (메세지에 이어진 체인이 가장 긴 게 진실로 합의됨)</li>
+<li>BFT: 메세지들 던지면 2/3 노드들이 검증 후 메세지를 합의함</li>
+</ul>
+<p>와 같이 나눌 수 있다.</p>
+<p>여기까지가 백서 내용이다. 백서 자체도 장황하지만.. 분산 시스템이 다 그렇듯 엣지케이스 처리를 엄청나게 해줘야 하기 때문에 구현체 내부 동작도 중요하다.</p>
+<p>현재 공부중인 내용이라 부족한 부분이 존재할 수 있다. 여러가지 엣지케이스가 생각나는데, 다음 글에서 어떻게 핸들링하는지 알아보도록 하겠다.</p>
+
+  </div>
+  
+
+  <footer class="post-footer">
+      
+      <ul class="post-tags">
+          
+          
+          <li><a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;tags&#x2F;blockchain&#x2F;">blockchain</a></li>
+          
+          
+          <li><a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;tags&#x2F;crypto&#x2F;">crypto</a></li>
+          
+      </ul>
+      
+
+    
+    
+
+
+<nav class="paginav">
+    
+    <a class="prev" href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;posts&#x2F;2025-11-25-how-hd-wallet-works&#x2F;">
+        <span class="title">« Prev</span>
+        <br>
+        <span>HD Wallet 동작 알아보기</span>
+    </a>
+    
+    
+    <a class="next" href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;posts&#x2F;2026-03-17-false-sharing&#x2F;">
+        <span class="title">Next »</span>
+        <br>
+        <span>거짓 공유(False Sharing)</span>
+    </a>
+    
+</nav>
+
+
+    
+  </footer>
+
+</article>
+
+    </main>
+    
+    <footer class="footer">
+    
+    <span>&copy; 2026 <a href="https:&#x2F;&#x2F;wHoIsDReAmer.github.io&#x2F;blog&#x2F;"></a></span>
+    
+    <span>
+        Powered by
+        <a href="https://www.getzola.org/" rel="noopener noreferrer" target="_blank">Zola</a> &
+        <a href="https://github.com/cydave/zola-theme-papermod" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+
+
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+
+
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+
+
+
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+
+
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerText = 'copy';
+        function copyingDone() {
+            copybutton.innerText = 'copied!';
+            setTimeout(() => {
+                copybutton.innerText = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                var content = codeblock.textContent;
+                if(codeblock.firstChild.tagName == 'TABLE') {
+                    content = Array(...codeblock.firstChild.getElementsByTagName('span')).map((span) => { return span.textContent; }).join('');
+                }
+                navigator.clipboard.writeText(content);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            // td containing LineNos
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            // table containing LineNos and code
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            // code blocks not having highlight as parent class
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+
+
+
+    
+</body>
+</html>

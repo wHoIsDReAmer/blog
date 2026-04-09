@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>CWLog - unsafe</title>
+    <subtitle>개발 &amp; 해킹 좋아하는 사람의 블로그</subtitle>
+    <link rel="self" type="application/atom+xml" href="https://wHoIsDReAmer.github.io/blog/tags/unsafe/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://wHoIsDReAmer.github.io/blog/"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2026-04-06T00:00:00+00:00</updated>
+    <id>https://wHoIsDReAmer.github.io/blog/tags/unsafe/atom.xml</id>
+    <entry xml:lang="en">
+        <title>러스트의 Pin</title>
+        <published>2026-04-06T00:00:00+00:00</published>
+        <updated>2026-04-06T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://wHoIsDReAmer.github.io/blog/posts/2026-04-06-rust-pin/"/>
+        <id>https://wHoIsDReAmer.github.io/blog/posts/2026-04-06-rust-pin/</id>
+        
+        <content type="html" xml:base="https://wHoIsDReAmer.github.io/blog/posts/2026-04-06-rust-pin/">&lt;p&gt;러스트에서 범용적인 애플리케이션 코드를 작성할 때는 잘 쓰이지 않는 메모리 고정 &lt;code&gt;Pin&lt;&#x2F;code&gt;에 대해서 알아보자.&lt;&#x2F;p&gt;
+&lt;p&gt;일반적인 상황에서는 별로 접할 기회가 없지만, 러스트의 핵심 동작을 이해하려면 반드시 짚고 넘어가야 하는 개념이다. 보통 이 &lt;code&gt;Pin&lt;&#x2F;code&gt;을 마주치게 되는 케이스는 크게 두 가지다.&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;비동기 (&lt;code&gt;async&#x2F;await&lt;&#x2F;code&gt;) 생태계&lt;&#x2F;li&gt;
+&lt;li&gt;극단적인 성능 최적화 (e.g Zero Allocation Something)&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;우선 비동기부터 빠르게 알아보자.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;bidonggieseoyi-pin&quot;&gt;비동기에서의 &lt;code&gt;Pin&lt;&#x2F;code&gt;&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#bidonggieseoyi-pin&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;p&gt;좀 복잡하다. 러스트의 비동기 동작 원리를 이해해야 &lt;code&gt;Pin&lt;&#x2F;code&gt;이 왜 필요한지 알 수 있다. 예를 들어 다음과 같은 비동기 함수가 있다고 가정하자:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span&gt;async &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;foo&lt;&#x2F;span&gt;&lt;span&gt;() {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let mut&lt;&#x2F;span&gt;&lt;span&gt; buffer = [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u8&lt;&#x2F;span&gt;&lt;span&gt;; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;2048&lt;&#x2F;span&gt;&lt;span&gt;];
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; ptr = &amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;mut&lt;&#x2F;span&gt;&lt;span&gt; buffer;
+&lt;&#x2F;span&gt;&lt;span&gt;    
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;some_io_action&lt;&#x2F;span&gt;&lt;span&gt;(ptr).await;
+&lt;&#x2F;span&gt;&lt;span&gt;    
+&lt;&#x2F;span&gt;&lt;span&gt;    println!(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;bar&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;);
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;비동기 함수 내부를 보면, &lt;code&gt;ptr&lt;&#x2F;code&gt;이 동일한 스택 내의 &lt;code&gt;buffer&lt;&#x2F;code&gt;를 가리키는 &lt;strong&gt;자기 참조(Self-referential)&lt;&#x2F;strong&gt; 구조를 띠고 있다.&lt;&#x2F;p&gt;
+&lt;p&gt;컴파일러는 이 &lt;code&gt;async&lt;&#x2F;code&gt; 블록을 다음과 같은 상태 머신(State Machine)으로 변환한다 (이해를 돕기 위한 의사 코드, 실제로는 Gen된 코드가 더 복잡하다):&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;enum &lt;&#x2F;span&gt;&lt;span&gt;FooStateMachine {
+&lt;&#x2F;span&gt;&lt;span&gt;    Start,
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; await 지점의 상태를 저장
+&lt;&#x2F;span&gt;&lt;span&gt;    YieldedAtSomeIo {
+&lt;&#x2F;span&gt;&lt;span&gt;        buffer: [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u8&lt;&#x2F;span&gt;&lt;span&gt;; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;2048&lt;&#x2F;span&gt;&lt;span&gt;],
+&lt;&#x2F;span&gt;&lt;span&gt;        ptr: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;*mut &lt;&#x2F;span&gt;&lt;span&gt;[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u8&lt;&#x2F;span&gt;&lt;span&gt;; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;2048&lt;&#x2F;span&gt;&lt;span&gt;], &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 구조체 내부의 buffer를 가리키는 자기 참조
+&lt;&#x2F;span&gt;&lt;span&gt;    },
+&lt;&#x2F;span&gt;&lt;span&gt;    Done,
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;만약 이 &lt;code&gt;foo&lt;&#x2F;code&gt; 상태 머신 객체 자체가 메모리상에서 다른 곳으로 이동(Move)되면 어떻게 될까? &lt;code&gt;buffer&lt;&#x2F;code&gt;의 메모리 주소는 새로운 곳으로 바뀌지만, &lt;code&gt;ptr&lt;&#x2F;code&gt;은 여전히 옛날 주소를 가리키고 있을 것이다. 이 상태에서 &lt;code&gt;ptr&lt;&#x2F;code&gt;을 참조하면 UB가 발생한다.&lt;&#x2F;p&gt;
+&lt;p&gt;예를 들어 &lt;code&gt;Vec&lt;&#x2F;code&gt; 내에 &lt;code&gt;Future&lt;&#x2F;code&gt;를 넣는다고 가정해 보자.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let mut&lt;&#x2F;span&gt;&lt;span&gt; foo = Vec::new();
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 작업 큐에 비동기 작업을 넣음
+&lt;&#x2F;span&gt;&lt;span&gt;foo.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;push&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;bar&lt;&#x2F;span&gt;&lt;span&gt;());
+&lt;&#x2F;span&gt;&lt;span&gt;foo[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;].&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;poll&lt;&#x2F;span&gt;&lt;span&gt;(); &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 첫 번째 작업 실행 내부적으로 참조 포인터 생성됨
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 새로운 작업이 들어와서 벡터의 용량(Capacity)이 초과됨
+&lt;&#x2F;span&gt;&lt;span&gt;foo.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;push&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;bar&lt;&#x2F;span&gt;&lt;span&gt;()); 
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 메모리 재배치가 일어난 후 다시 poll을 시도하면 UB
+&lt;&#x2F;span&gt;&lt;span&gt;foo[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;].&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;poll&lt;&#x2F;span&gt;&lt;span&gt;();
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;벡터는 용량이 꽉 차면 더 큰 메모리를 할당받아 기존 요소들을 통째로 새로운 주소로 재배치(Reallocation)한다. 이때 자기 참조 포인터들이 모두 망가진다.&lt;&#x2F;p&gt;
+&lt;p&gt;그럼 단순히 &lt;code&gt;Box&lt;&#x2F;code&gt;로 감싸서 힙에 올리면 원본 데이터는 이동하지 않으니까 문제가 없지 않나? 라고 생각할 수 있다. 절반은 맞다. 하지만 &lt;code&gt;Box&amp;lt;T&amp;gt;&lt;&#x2F;code&gt;는 내부 데이터에 대한 순수한 가변 참조자(&lt;code&gt;&amp;amp;mut T&lt;&#x2F;code&gt;)를 제공한다. 악의적이거나 실수로 누군가 &lt;code&gt;std::mem::swap(&amp;amp;mut box1, &amp;amp;mut box2)&lt;&#x2F;code&gt;를 때려버리면 힙 위에서도 내부 데이터가 뒤바뀌며 프로그램이 터질 것이다.&lt;&#x2F;p&gt;
+&lt;p&gt;그래서 러스트는 &lt;code&gt;Pin&amp;lt;P&amp;gt;&lt;&#x2F;code&gt;이라는 구조체를 제공한다. 이건 마법이 아니라, **개발자가 순수한 &lt;code&gt;&amp;amp;mut T&lt;&#x2F;code&gt;를 마음대로 빼내지 못하게 막아버리는 포인터 래퍼(Wrapper)**다. 이게 &lt;code&gt;Future&lt;&#x2F;code&gt; 트레잇의 &lt;code&gt;poll&lt;&#x2F;code&gt; 메서드가 &lt;code&gt;&amp;amp;mut Self&lt;&#x2F;code&gt; 대신 &lt;code&gt;Pin&amp;lt;&amp;amp;mut Self&amp;gt;&lt;&#x2F;code&gt;를 인자로 받는 이유다.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;h2 id=&quot;pinyi-haegsim-dongjag-weonri&quot;&gt;&lt;code&gt;Pin&lt;&#x2F;code&gt;의 핵심 동작 원리&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#pinyi-haegsim-dongjag-weonri&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;p&gt;최적화 기법을 보기 전에, &lt;code&gt;Pin&lt;&#x2F;code&gt; 자체가 어떻게 동작하는지 톺아보자.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;pin-jaceneun-idonghal-su-issda&quot;&gt;Pin 자체는 이동할 수 있다&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#pin-jaceneun-idonghal-su-issda&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;헷갈리는 부분인데, &lt;strong&gt;&lt;code&gt;Pin&lt;&#x2F;code&gt; 구조체 자체는 자유롭게 이동 가능한 &lt;code&gt;Unpin&lt;&#x2F;code&gt; 타입이다.&lt;&#x2F;strong&gt; &lt;code&gt;Pin&amp;lt;&amp;amp;mut T&amp;gt;&lt;&#x2F;code&gt;를 함수 인자로 넘기거나 변수에 재할당하는 행위는 메모리 주소를 담고 있는 8바이트짜리 wrapper를 넘겨주는 것일 뿐이다. 이리저리 move 돼도 결국 가리키는 &lt;code&gt;T&lt;&#x2F;code&gt;의 메모리 주소는 절대 변하지 않는다.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;pin-newwa-pin-new-unchecked&quot;&gt;&lt;code&gt;Pin::new&lt;&#x2F;code&gt;와 &lt;code&gt;Pin::new_unchecked&lt;&#x2F;code&gt;&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#pin-newwa-pin-new-unchecked&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;어떤 데이터를 &lt;code&gt;Pin&lt;&#x2F;code&gt;으로 묶을 때는 두 가지 방법이 있다.&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;Pin::new&lt;&#x2F;code&gt; (safe):&lt;&#x2F;strong&gt; 대상이 &lt;code&gt;Unpin&lt;&#x2F;code&gt; 타입(예: &lt;code&gt;i32&lt;&#x2F;code&gt;, &lt;code&gt;String&lt;&#x2F;code&gt;, 평범한 구조체)일 때만 쓸 수 있다. 애초에 메모리에서 이동해도 아무 문제 없는 타입들이라 컴파일러가 Auto Impl 해준다.&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;Pin::new_unchecked&lt;&#x2F;code&gt; (unsafe):&lt;&#x2F;strong&gt; 대상이  이동하면 안 되는 &lt;code&gt;!Unpin&lt;&#x2F;code&gt; 타입(예: &lt;code&gt;Future&lt;&#x2F;code&gt;나 아래에서 다룰 침투형 노드)일 때 사용한다. 컴파일러가 안전을 보장할 수 없다.  &lt;code&gt;unsafe&lt;&#x2F;code&gt; 블록을 열고 개발자가 보장의 책임을 져야 한다.&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;hr &#x2F;&gt;
+&lt;h2 id=&quot;geugdanjeogin-coejeoghwa-cimtuhyeong-yeongyeol-riseuteu&quot;&gt;극단적인 최적화: 침투형 연결 리스트&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#geugdanjeogin-coejeoghwa-cimtuhyeong-yeongyeol-riseuteu&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;p&gt;이제 극단적인 최적화 케이스에서 &lt;code&gt;Pin&lt;&#x2F;code&gt;이 어떻게 활용되는지 알아보자. 할당 비용을 빡세게 최적화한 **침투형 연결 리스트(Intrusive Linked List)**가 예시로 꼽을 수 있겠다.&lt;&#x2F;p&gt;
+&lt;p&gt;일반적인 &lt;code&gt;Linked List&lt;&#x2F;code&gt;는 보통 다음과 같이 구현된다.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;Node&amp;lt;T&amp;gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;: T,
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;prev&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;*mut &lt;&#x2F;span&gt;&lt;span&gt;Node&amp;lt;T&amp;gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;next&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;*mut &lt;&#x2F;span&gt;&lt;span&gt;Node&amp;lt;T&amp;gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;노드가 하나 추가될 때마다 힙 할당(&lt;code&gt;Box::new&lt;&#x2F;code&gt; 등)이 발생한다. 비용적으로 별로 좋지 않기 때문에 아래와 같은 침투형 연결 리스트를 사용할 수 있다.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;use &lt;&#x2F;span&gt;&lt;span&gt;std::marker::PhantomPinned;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;use &lt;&#x2F;span&gt;&lt;span&gt;std::pin::Pin;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;ListLink {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;prev&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;*mut&lt;&#x2F;span&gt;&lt;span&gt; ListLink,
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;next&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;*mut&lt;&#x2F;span&gt;&lt;span&gt; ListLink,
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;Order {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;price&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u64&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;link&lt;&#x2F;span&gt;&lt;span&gt;: ListLink,
+&lt;&#x2F;span&gt;&lt;span&gt;    
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 컴파일러에게 이 타입은 이동 불가(!Unpin)임을 알림
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;_marker&lt;&#x2F;span&gt;&lt;span&gt;: PhantomPinned, 
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;여기서 &lt;code&gt;PhantomPinned&lt;&#x2F;code&gt;라는 마커 타입이 나온다.&lt;&#x2F;p&gt;
+&lt;p&gt;현재 Stable Rust에서는 &lt;code&gt;impl !Unpin for Order {}&lt;&#x2F;code&gt; 처럼 명시적인 Negative Impl 문법을 지원하지 않는다. 그래서 러스트에서 지원해주는 &lt;code&gt;!Unpin&lt;&#x2F;code&gt;인 &lt;code&gt;PhantomPinned&lt;&#x2F;code&gt; 더미 필드를 집어넣어서 구조체 전체를 전염시켜 강제로 &lt;code&gt;!Unpin&lt;&#x2F;code&gt; 타입으로 만드는 꼼수를 쓴다.&lt;&#x2F;p&gt;
+&lt;p&gt;구조체가 &lt;code&gt;!Unpin&lt;&#x2F;code&gt;이 되면, 안전한 Rust 내에서는 절대 &lt;code&gt;Pin&lt;&#x2F;code&gt;을 벗겨내고 &lt;code&gt;&amp;amp;mut Order&lt;&#x2F;code&gt;를 가져올 수 없다. 즉, 누군가 &lt;code&gt;std::mem::swap&lt;&#x2F;code&gt;으로 주문을 섞어버리는 것을 원천 차단한다. 실제로 마커 타입 넣고 &lt;code&gt;std::mem::swap&lt;&#x2F;code&gt; 돌려보면 &lt;code&gt;Unpin&lt;&#x2F;code&gt; 트레잇을 만족하지 않는다면서 컴파일 삐꾸낸다.&lt;&#x2F;p&gt;
+&lt;p&gt;리스트를 순회할 때 &lt;code&gt;Order&lt;&#x2F;code&gt;의 포인터가 아니라 내부 필드인 &lt;code&gt;ListLink&lt;&#x2F;code&gt;의 포인터를 얻게 된다. 원본 &lt;code&gt;Order&lt;&#x2F;code&gt; 객체를 다루려면 포인터 역산을 해야 한다. 다행히 러스트 1.77부터 &lt;code&gt;offset_of!&lt;&#x2F;code&gt; 매크로를 지원하여 일일이 바이트를 계산할 필요가 없어졌다.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;use &lt;&#x2F;span&gt;&lt;span&gt;std::mem::offset_of;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;impl &lt;&#x2F;span&gt;&lt;span&gt;ListLink {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;unsafe fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;get_parent&lt;&#x2F;span&gt;&lt;span&gt;(&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;) -&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;*mut&lt;&#x2F;span&gt;&lt;span&gt; Order {
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 포인터 주소 구하기
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; link_ptr = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self &lt;&#x2F;span&gt;&lt;span&gt;as &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;*const&lt;&#x2F;span&gt;&lt;span&gt; ListLink as &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;*const u8&lt;&#x2F;span&gt;&lt;span&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;        
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; offset_of! 매크로를 사용해서 Order 내의 link 필드 오프셋 구하기
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; offset = offset_of!(Order, link);
+&lt;&#x2F;span&gt;&lt;span&gt;        
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; link 주소에서 오프셋만큼 빼서 본체의 시작 주소로 이동
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; parent_ptr = link_ptr.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;sub&lt;&#x2F;span&gt;&lt;span&gt;(offset);
+&lt;&#x2F;span&gt;&lt;span&gt;        
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 원본 Order 캐스팅
+&lt;&#x2F;span&gt;&lt;span&gt;        parent_ptr as &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;*mut&lt;&#x2F;span&gt;&lt;span&gt; Order
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;code&gt;unsafe&lt;&#x2F;code&gt;하긴 하지만, &lt;code&gt;ListLink&lt;&#x2F;code&gt;가 무조건 &lt;code&gt;Order&lt;&#x2F;code&gt; 내부에 존재한다는 것을 API 설계자가 캡슐화로 보장한다면 문제없이 동작한다.&lt;&#x2F;p&gt;
+&lt;p&gt;이거 외에 개발자가 신경써줘야할 게 좀 있다.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;1-pin-tuyeong-pin-projection&quot;&gt;1. Pin 투영 (Pin Projection)&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#1-pin-tuyeong-pin-projection&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;&lt;code&gt;Pin&amp;lt;&amp;amp;mut Order&amp;gt;&lt;&#x2F;code&gt; 상태인 구조체에서 내부 필드를 가져오는 헬퍼 함수를 작성할 때 주의해야 한다. **Pin 투영(Projection)**이라고 하는데, 구조체 설계자가 다음 두 가지 중 하나를 선택해야 한다.&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Structural Pinning:&lt;&#x2F;strong&gt; 내부 필드(&lt;code&gt;link&lt;&#x2F;code&gt;)도 절대로 메모리에서 재배치되면 안 된다. 따라서 getter는 반드시 &lt;code&gt;Pin&amp;lt;&amp;amp;mut ListLink&amp;gt;&lt;&#x2F;code&gt;를 반환해야 한다.&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;Non-Structural Pinning:&lt;&#x2F;strong&gt; 내부 필드(&lt;code&gt;price&lt;&#x2F;code&gt;)는 값만 빼서 바꿔도 리스트에 타격이 없다. 따라서 내부 타입인 &lt;code&gt;&amp;amp;mut u64&lt;&#x2F;code&gt;를 반환해도 된다.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;조심해야할 부분은 동일한 필드에 대해 &lt;strong&gt;묶인 참조(&lt;code&gt;Pin&amp;lt;&amp;amp;mut T&amp;gt;&lt;&#x2F;code&gt;)와 풀린 참조(&lt;code&gt;&amp;amp;mut T&lt;&#x2F;code&gt;)를 동시에 노출하는 것&lt;&#x2F;strong&gt;이다. 이렇게 되면 풀린 참조를 통해 &lt;code&gt;swap&lt;&#x2F;code&gt;을 해버릴 수 있어 &lt;code&gt;Pin&lt;&#x2F;code&gt;이 보장하던 불변성이 파괴되며 UB가 된다. Pin 투영의 모든 보장의 책임은 전부 개발자에게 있어서 꽤 까다롭다.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;2-drop-bojangseong&quot;&gt;2. Drop 보장성&lt;a class=&quot;anchor&quot; aria-hidden=&quot;true&quot; href=&quot;#2-drop-bojangseong&quot; hidden=&quot;&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;객체가 메모리에서 해제될 때 호출되는 &lt;code&gt;Drop&lt;&#x2F;code&gt; 트레이트도 고려해줘야한다.
+구조체가 묶여(&lt;code&gt;Pin&lt;&#x2F;code&gt;) 있더라도 소멸자 함수인 &lt;code&gt;drop(&amp;amp;mut self)&lt;&#x2F;code&gt; 함수의 인자로 순수한 &lt;code&gt;&amp;amp;mut self&lt;&#x2F;code&gt;를 던져준다.&lt;&#x2F;p&gt;
+&lt;p&gt;이때 Structural하게 묶어둔 필드(&lt;code&gt;link&lt;&#x2F;code&gt;)를 &lt;code&gt;replace&lt;&#x2F;code&gt;하거나 재배치해버리면 UB가 발생한다. 따라서 &lt;code&gt;Drop&lt;&#x2F;code&gt; 내부에서는 &lt;code&gt;Pin::new_unchecked(self)&lt;&#x2F;code&gt;를 사용해 강제로 다시 족쇄를 채운 뒤, 안전하게 리스트 연결을 해제(Unlink)하는 로직을 작성해야 한다.&lt;&#x2F;p&gt;
+&lt;p&gt;추가로, 메모리 압축을 위한 &lt;code&gt;#[repr(packed)]&lt;&#x2F;code&gt; attribute를 걸면 내부 필드 메모리 정렬이 깨져 포인터 연산 시 CPU 예외가 발생할 수 있다.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;p&gt;&lt;strong&gt;참조&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;medium.com&#x2F;intro-to-rust&#x2F;2020-04-24-pin-3500b145cca&quot;&gt;https:&#x2F;&#x2F;medium.com&#x2F;intro-to-rust&#x2F;2020-04-24-pin-3500b145cca&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;doc.rust-lang.org&#x2F;std&#x2F;pin&#x2F;index.html&quot;&gt;https:&#x2F;&#x2F;doc.rust-lang.org&#x2F;std&#x2F;pin&#x2F;index.html&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</content>
+        
+    </entry>
+</feed>
