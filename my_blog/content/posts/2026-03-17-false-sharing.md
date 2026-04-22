@@ -1,6 +1,7 @@
 +++
 title = "거짓 공유(False Sharing)"
 date = "2026-03-17"
+aliases = ["posts/2026-03-17-false-sharing"]
 description = "거짓 공유와 캐시 일관성 프로토콜"
 
 [taxonomies]

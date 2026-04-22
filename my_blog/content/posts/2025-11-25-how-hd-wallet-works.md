@@ -1,6 +1,7 @@
 +++
 title = "HD Wallet 동작 알아보기"
 date = "2025-11-25"
+aliases = ["posts/2025-11-25-how-hd-wallet-works"]
 description = "HD Wallet이 어떻게 동작하는지 알아봅시다."
 
 [taxonomies]

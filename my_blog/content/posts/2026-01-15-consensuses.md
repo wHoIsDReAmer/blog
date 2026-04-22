@@ -1,6 +1,7 @@
 +++
 title = "Consensus Engine (합의 엔진) 이해하기"
 date = "2026-01-15"
+aliases = ["posts/2026-01-15-consensuses"]
 description = "Consensus Engine을 이해해봅시다."
 
 [taxonomies]
