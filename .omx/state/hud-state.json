@@ -1,5 +1,5 @@
 {
-  "last_turn_at": "2026-04-22T07:18:40.004Z",
-  "turn_count": 2,
-  "last_agent_output": "포스트 정리는 적용했습니다. `my_blog/content/posts` 아래 실제 글 12개를 `snake_case`에서 `YYYY-MM-DD-kebab-case`로 바꿨고, 각 "
+  "last_turn_at": "2026-04-22T07:31:58.892Z",
+  "turn_count": 3,
+  "last_agent_output": "워크플로우는 바꿨습니다. 기존 `gh-pages` 브랜치에 푸시하던 `shalzz/zola-deploy-action@v0.20.0` 대신, GitHub 공식 Pages artifa"
 }

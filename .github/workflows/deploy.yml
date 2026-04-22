@@ -1,25 +1,57 @@
-name: Build and Deploy Zola site to GitHub Pages
+name: Deploy Zola site to GitHub Pages
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
-  build_and_deploy:
-    name: Build and Deploy
+  build:
+    name: Build site
     runs-on: ubuntu-latest
-    permissions:
-      contents: write # gh-pages 브랜치
-      
+
     steps:
-      - name: Checkout main branch
-        uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v5
         with:
           submodules: recursive
 
-      - name: Build and Deploy with zola-deploy-action
-        uses: shalzz/zola-deploy-action@v0.20.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BUILD_DIR: my_blog
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Install Zola
+        uses: taiki-e/install-action@v2
+        with:
+          tool: zola@0.21.0
+
+      - name: Build site
+        working-directory: my_blog
+        run: zola build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: my_blog/public
+
+  deploy:
+    name: Deploy site
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
