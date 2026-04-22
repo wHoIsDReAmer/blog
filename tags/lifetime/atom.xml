@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>CWLog - lifetime</title>
+    <subtitle>개발 &amp; 해킹 좋아하는 사람의 블로그</subtitle>
+    <link rel="self" type="application/atom+xml" href="https://wHoIsDReAmer.github.io/blog/tags/lifetime/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://wHoIsDReAmer.github.io/blog/"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2026-04-21T00:00:00+00:00</updated>
+    <id>https://wHoIsDReAmer.github.io/blog/tags/lifetime/atom.xml</id>
+    <entry xml:lang="en">
+        <title>러스트의 HRTB</title>
+        <published>2026-04-21T00:00:00+00:00</published>
+        <updated>2026-04-21T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://wHoIsDReAmer.github.io/blog/posts/rust-hrtb/"/>
+        <id>https://wHoIsDReAmer.github.io/blog/posts/rust-hrtb/</id>
+        
+        <content type="html" xml:base="https://wHoIsDReAmer.github.io/blog/posts/rust-hrtb/">&lt;p&gt;HRTB는 &lt;code&gt;Higher-Rank Trait Bound&lt;&#x2F;code&gt;의 약자다. 기존 라이프타임의 한계를 해결하기 위해 만들어진 문법이다. 예를 들면 다음과 같은 상황과 같다:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;foo&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;, F&amp;gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;closure&lt;&#x2F;span&gt;&lt;span&gt;: F)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;where
+&lt;&#x2F;span&gt;&lt;span&gt;    F: Fn(&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a i32&lt;&#x2F;span&gt;&lt;span&gt;),
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; bar = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;42&lt;&#x2F;span&gt;&lt;span&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;closure&lt;&#x2F;span&gt;&lt;span&gt;(&amp;amp;bar); &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Compile errors here
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;보통 클로저에 참조를 넘겨야할 때 이런 이슈를 꽤 자주 마주친다. 지금 보면 인자 &lt;code&gt;foo&lt;&#x2F;code&gt;가 &lt;code&gt;Fn(&amp;amp;&#x27;a i32)&lt;&#x2F;code&gt; 함수 타입 트레잇을 받고 있다. 위 코드를 컴파일해보면 에러가 난다.&lt;&#x2F;p&gt;
+&lt;p&gt;위 코드가 왜 에러가 나냐면, 러스트 컴파일러에서 참조 라이프타임을 추론할 때 caller의 라이프타임을 적용시킨다. &lt;code&gt;main&lt;&#x2F;code&gt; 함수에서 foo를 호출했다고 하자. 그럼 &lt;code&gt;&amp;amp;&#x27;a&lt;&#x2F;code&gt; 라이프타임은 자연스럽게 &lt;code&gt;main&lt;&#x2F;code&gt; 스코프와 같은 수명을 갖게된다. 즉, 지역 참조인 &lt;code&gt;&amp;amp;bar&lt;&#x2F;code&gt;의 수명이 성립이 안되는 거다. (&lt;code&gt;main&lt;&#x2F;code&gt;보다 빨리 드랍된다.)&lt;&#x2F;p&gt;
+&lt;p&gt;그래서 해결책으로 &lt;strong&gt;HRTB&lt;&#x2F;strong&gt;를 사용한다.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;foo&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;F&amp;gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;closure&lt;&#x2F;span&gt;&lt;span&gt;: F)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;where
+&lt;&#x2F;span&gt;&lt;span&gt;    F: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;for&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; Fn(&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a i32&lt;&#x2F;span&gt;&lt;span&gt;),
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; bar = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;42&lt;&#x2F;span&gt;&lt;span&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;closure&lt;&#x2F;span&gt;&lt;span&gt;(&amp;amp;bar);
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;위와 같이 작성할 수 있다. 차이점은 아까 코드와 다르게 제네릭 정의에 함수에 붙지 않고 F에 직접 &lt;code&gt;for&amp;lt;&#x27;a&amp;gt;&lt;&#x2F;code&gt; 문법으로 바인딩해준다..&lt;&#x2F;p&gt;
+&lt;p&gt;이게 무슨 말이냐면 선언하는 주체를 &lt;code&gt;F&lt;&#x2F;code&gt;에게 넘기곘다는 것이다. 즉 기존엔 caller가 라이프타임의 수명을 정했지만 이젠 &lt;code&gt;F&lt;&#x2F;code&gt;가 정한다는 것이다. 사실상 뭐가 들어오든 상관 없는 셈.&lt;&#x2F;p&gt;
+&lt;p&gt;이름이 &lt;code&gt;Higher-Rank&lt;&#x2F;code&gt;인 이유도 여기서 나온다. 일반적인 라이프타임 정의는 rank-1, 즉 함수 시그니처 바깥에 있고 위와 같은 바인딩은 trait bound 안쪽, 즉 rank-2가 된다.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;p&gt;&lt;strong&gt;참조&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;rust-lang.github.io&#x2F;rfcs&#x2F;0387-higher-ranked-trait-bounds.html&quot;&gt;https:&#x2F;&#x2F;rust-lang.github.io&#x2F;rfcs&#x2F;0387-higher-ranked-trait-bounds.html&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.rustfinity.com&#x2F;blog&#x2F;higher-rank-trait-bounds&quot;&gt;https:&#x2F;&#x2F;www.rustfinity.com&#x2F;blog&#x2F;higher-rank-trait-bounds&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</content>
+        
+    </entry>
+</feed>

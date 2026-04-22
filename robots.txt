@@ -1,0 +1,4 @@
+User-agent: *
+Disallow:
+Allow: /
+Sitemap: https://wHoIsDReAmer.github.io/blog/sitemap.xml
