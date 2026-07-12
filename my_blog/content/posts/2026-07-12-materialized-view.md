@@ -1,7 +1,7 @@
 +++
 title = "Materialized View"
-date = "2026-06-01"
-aliases = ["posts/2026-06-01-materialized-view"]
+date = "2026-07-12"
+aliases = ["posts/2026-07-12-materialized-view"]
 description = "집계, 통계 등 거대한 연산에 유리한 MV 알아보기"
 
 [taxonomies]
@@ -10,7 +10,7 @@ tags = ["database"]
 
 흔히 온라인 게임 랭킹에서 볼 수 있는 이 순위표, 다들 한번 쯤 본 적이 있을 것이다.
 
-![ranking-image](../../images/valorant-ranking.png)
+![ranking-image](../../images/valorant-ranking.jpg)
 > 게임 '발로란트'의 랭킹 순위표
 
 근래에 재미있는 릴스를 봤는데 이런 랭킹을 구현하려면 `Redis` 같은 캐시 서버를 써서 결과를 '캐시'하라는 내용이다. (대충 브레인랏 형식으로 설명하는 릴스) 물론 틀린 말은 아닌데 이러면 사실 복잡도를 의존하게 된다. 뿐만 아니라 추후 관리 포인트도 늘 수 있어서.. 별로 좋은 생각은 아닌 것 같다.
