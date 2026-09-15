@@ -1,8 +1,10 @@
 +++
-title = "Posts"
+title = "블로그"
 sort_by = "date"
+template = "article_list.html"
+page_template = "article.html"
 paginate_by = 5
-insert_anchor_links = "right"
-generate_feeds = true
 transparent = true
+generate_feeds = true
+insert_anchor_links = "left"
 +++
