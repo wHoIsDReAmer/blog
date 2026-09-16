@@ -1,0 +1,6 @@
+// The home banner is 48 columns of ASCII art. `pre` keeps a fixed 1rem font
+// size, so anything narrower than ~590px clips it behind a horizontal
+// scrollbar. Scale with the viewport below that so it always fits whole.
+.crt pre {
+	font-size: min(1rem, 2.7vw);
+}

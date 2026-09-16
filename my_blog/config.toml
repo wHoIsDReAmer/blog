@@ -36,6 +36,7 @@ show_reading_time = true
 show_share_button = false
 show_backlinks = true
 toc = true
+styles = ["custom.css"]
 
 [extra.nav]
 show_feed = true
